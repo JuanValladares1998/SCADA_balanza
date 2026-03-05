@@ -1,0 +1,57 @@
+/* styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  /* Paleta SCADA Estandarizada */
+  --scada-bg: #f1f5f9;      /* Slate-100 */
+  --card-bg: #ffffff;       /* White */
+  --text-primary: #1e293b;  /* Slate-800 */
+  --text-secondary: #64748b;/* Slate-500 */
+  
+  /* Colores de Estado */
+  --status-ok: #16a34a;     /* Green-600 */
+  --status-warning: #ca8a04;/* Yellow-600 */
+  --status-alarm: #dc2626;  /* Red-600 */
+  
+  /* Bordes */
+  --border-radius: 8px;
+  --border-color: #cbd5e1;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--scada-bg);
+  color: var(--text-primary);
+}
+
+/* Utilidad para simular el panel LED */
+.led-display {
+  font-family: 'Share Tech Mono', monospace;
+  background-color: #000;
+  color: #22c55e; /* Green LED */
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
+  letter-spacing: 2px;
+}
+
+/* Scrollbar personalizado para paneles pequeños */
+.scada-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.scada-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.scada-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.scada-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Efecto Grid para el área de dibujo */
+.engineering-grid {
+  background-size: 20px 20px;
+  background-image:
+    linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+    linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+}
