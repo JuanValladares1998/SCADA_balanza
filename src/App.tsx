@@ -1,20 +1,32 @@
-import TarjetaAlertas from "./components/TarjetaAlertas";
-import TarjetaControlPeso from "./components/TarjetaControlPeso";
-import TarjetaDiagrama from "./components/TarjetaDiagrama";
-import TarjetaIndicadores from "./components/TarjetaIndicadores";
-import TarjetaPantallaLED from "./components/TarjetaPantallaLED";
-import TarjetaSensoresIR from "./components/TarjetaSensoresIR";
-import TarjetaVehiculoChofer from "./components/TarjetaVehiculoChofer";
+import TarjetaAlertas from "./components/layout/cards/TarjetaAlertas";
+import TarjetaControlPeso from "./components/layout/cards/TarjetaControlPeso";
+import TarjetaDiagrama from "./components/layout/cards/TarjetaDiagrama";
+import TarjetaIndicadores from "./components/layout/cards/TarjetaIndicadores";
+import TarjetaPantallaLED from "./components/layout/cards/TarjetaPantallaLED";
+import TarjetaSensoresIR from "./components/layout/cards/TarjetaSensoresIR";
+import TarjetaVehiculoChofer from "./components/layout/cards/TarjetaVehiculoChofer";
+import { Link } from "react-router-dom";
 
-function Aplicacion() {
+function PaginaDashboard() {
   return (
     <main className="p-4 h-screen flex flex-col gap-4">
       <header className="flex justify-between items-center mb-2">
         <h1 className="text-2xl font-bold scada-text-primary tracking-tight">
           Sistema SCADA: Control de Pesaje
         </h1>
-        <div className="text-sm scada-text-secondary">
-          Estado del Sistema: <span className="scada-text-ok font-bold">ONLINE</span>
+        <div className="flex items-center gap-4">
+          <div className="text-sm scada-text-secondary">
+            Estado del Sistema: <span className="scada-text-ok font-bold">ONLINE</span>
+          </div>
+          {/* <nav className="flex items-center gap-2 text-sm">
+            <Link className="scada-text-primary font-semibold hover:underline" to="/dashboard">
+              Dashboard
+            </Link>
+            <span className="scada-text-secondary">|</span>
+            <Link className="scada-text-secondary hover:underline" to="/alertas">
+              Alertas
+            </Link>
+          </nav> */}
         </div>
       </header>
 
@@ -49,4 +61,4 @@ function Aplicacion() {
   );
 }
 
-export default Aplicacion;
+export default PaginaDashboard;
