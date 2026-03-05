@@ -4,7 +4,7 @@ export enum EstadoAlineamiento {
     DESALINEADO = 'Desalineado'
 }
 
-export interface SensorIR {
+export interface Sensor {
     id: string;                                 // Ejem: "IR_ENTRADA_FRONT", "IR_SALIDA_REAR"
     etiqueta: string;                           // Descripción para el operador
 
@@ -30,7 +30,7 @@ export interface SensorIR {
  * usando un conjunto de sensores IR.
  */
 export interface PosicionamientoVehiculo {
-    sensorDelantero: SensorIR;
-    sensorTrasero: SensorIR;
+    sensorDelantero: Sensor;
+    sensorTrasero: Sensor;
     vehiculoCentrado: boolean; // Lógica: Front && Rear están despejados o según regla de negocio
 }
