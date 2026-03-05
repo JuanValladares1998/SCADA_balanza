@@ -78,6 +78,21 @@ body {
   border-color: #86efac;
 }
 
+.bg-status-ok {
+  background-color: #ecfdf3;
+  border-color: #86efac;
+}
+
+.bg-status-warning {
+  background-color: #fefce8;
+  border-color: #fde047;
+}
+
+.bg-status-alarm {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+}
+
 .scada-soft-box {
   background-color: var(--scada-bg);
   border: 1px solid var(--border-color);

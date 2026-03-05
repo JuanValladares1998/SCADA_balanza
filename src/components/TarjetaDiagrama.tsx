@@ -1,4 +1,4 @@
-function DiagramCard() {
+function TarjetaDiagrama() {
   return (
     <article className="col-span-6 scada-card shadow-sm p-4 flex flex-col relative">
       <h2 className="text-sm font-semibold scada-title p-2 rounded mb-2 absolute top-4 left-4 z-10 w-[95%]">
@@ -16,4 +16,4 @@ function DiagramCard() {
   );
 }
 
-export default DiagramCard;
+export default TarjetaDiagrama;
