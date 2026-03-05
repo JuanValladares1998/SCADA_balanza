@@ -40,16 +40,16 @@ function PaginaDiagrama() {
                 </h2>
 
                 <div className="engineering-grid w-full h-full rounded border scada-divider flex items-center justify-center mt-8">
-                    <div className="text-center scada-text-secondary">
-                        <SensorItem />
-                        <BalanzaItem />
-                        <CamaraItem />
-                        <LetreroItem />
-                        <SwitchItem />
-                        <UpsItem />
+                    <SensorItem />
+                    <BalanzaItem />
+                    <CamaraItem />
+                    <LetreroItem />
+                    <SwitchItem />
+                    <UpsItem />
+                    {/* <div className="text-center scada-text-secondary">
                         <p className="text-sm">[ Visualizacion SVG Interactiva del Camion ]</p>
                         <p className="text-xs">Sensores de Posicion Activos</p>
-                    </div>
+                    </div> */}
                 </div>
             </article>
         </main>
