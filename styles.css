@@ -1,10 +1,10 @@
 /* styles.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Share+Tech+Mono&display=swap');
 
 :root {
   /* Paleta SCADA Estandarizada */
-  --scada-bg: #f1f5f9;      /* Slate-100 */
-  --card-bg: #ffffff;       /* White */
+  --scada-bg: #E2E8F0;      /* Slate-100 */
+  --card-bg: #F1F5F9;       /* Superficie de tarjetas */
   --text-primary: #1e293b;  /* Slate-800 */
   --text-secondary: #64748b;/* Slate-500 */
   
@@ -19,9 +19,75 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Roboto', sans-serif;
   background-color: var(--scada-bg);
   color: var(--text-primary);
+}
+
+/* Base unificada de componentes */
+.scada-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.scada-title {
+  background-color: var(--scada-bg);
+  color: var(--text-primary);
+}
+
+.scada-text-primary { color: var(--text-primary); }
+.scada-text-secondary { color: var(--text-secondary); }
+.scada-text-ok { color: var(--status-ok); }
+.scada-text-warning { color: var(--status-warning); }
+.scada-text-alarm { color: var(--status-alarm); }
+
+.scada-divider {
+  border-color: var(--border-color);
+}
+
+/* Alertas unificadas */
+.scada-alert {
+  border-left-width: 4px;
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.scada-alert-alarm {
+  background-color: #fef2f2;
+  border-left-color: var(--status-alarm);
+}
+
+.scada-alert-warning {
+  background-color: #fefce8;
+  border-left-color: var(--status-warning);
+}
+
+.scada-alert-ok {
+  background-color: #ecfdf3;
+  border-left-color: var(--status-ok);
+}
+
+/* Chips y cajas de estado */
+.scada-chip {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.scada-chip-ok {
+  background-color: #ecfdf3;
+  border-color: #86efac;
+}
+
+.scada-soft-box {
+  background-color: var(--scada-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.scada-led-shell {
+  background-color: #1e293b;
+  border: 4px solid #475569;
+  border-radius: var(--border-radius);
 }
 
 /* Utilidad para simular el panel LED */
