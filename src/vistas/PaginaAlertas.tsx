@@ -23,14 +23,14 @@ function PaginaAlertas() {
             alertas={[
               {
                 id: 1,
-                estado: "alarma",
+                estado: "error",
                 titulo: "Alerta 1",
                 descripcion: "Sensor de Entrada Desconectado",
                 hora: "08:00 AM",
               },
               {
                 id: 2,
-                estado: "advertencia",
+                estado: "alerta",
                 titulo: "Alerta 2",
                 descripcion: "Peso Excede Limite Permitido",
                 hora: "08:05 AM",

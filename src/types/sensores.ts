@@ -19,7 +19,7 @@ export interface Sensor {
 
     // Estadísticas (Calculadas por el SCADA o PLC)
     cuentaActivacion: number;
-    ratioFalsaAlarma: number;                   // Porcentaje calculado
+    ratioFalsaerrora: number;                   // Porcentaje calculado
 
     // Entorno
     temperatura?: number;                       // Opcional, si hay sensor externo

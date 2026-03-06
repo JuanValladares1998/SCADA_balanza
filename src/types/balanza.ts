@@ -17,7 +17,7 @@ export interface BalanzaEstado {
     // Estados Digitales
     estaEnCero: boolean;
     tieneTara: boolean;
-    sobrecargaAlarma: boolean;
+    sobrecargaerrora: boolean;
 
     // Salud del Sistema
     redPDXSaludable: boolean;

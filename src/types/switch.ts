@@ -39,6 +39,6 @@ export interface SwitchEstado {
     cuentaPuertosActivos: number;
     puertos: PuertoData[];
 
-    // Alarmas Globales
-    alarmaGlobal: boolean;
+    // erroras Globales
+    erroraGlobal: boolean;
 }

@@ -35,8 +35,8 @@ function PaginaDashboard() {
         <TarjetaDiagrama />
         <TarjetaAlertas
           alertas={[
-            { id: 1, estado: "alarma", titulo: "Alerta 1", descripcion: "Sensor de Entrada Desconectado", hora: "08:00 AM" },
-            { id: 2, estado: "advertencia", titulo: "Alerta 2", descripcion: "Peso Excede Limite Permitido", hora: "08:05 AM" },
+            { id: 1, estado: "error", titulo: "Alerta 1", descripcion: "Sensor de Entrada Desconectado", hora: "08:00 AM" },
+            { id: 2, estado: "alerta", titulo: "Alerta 2", descripcion: "Peso Excede Limite Permitido", hora: "08:05 AM" },
             { id: 3, estado: "ok", titulo: "Alerta 3", descripcion: "Calibracion Exitosa", hora: "08:10 AM" },
           ]}
         />
@@ -44,9 +44,9 @@ function PaginaDashboard() {
         <TarjetaSensoresIR
           sensores={[
             { id: 1, nombre: "IR Entrada", estado: "ok" },
-            { id: 2, nombre: "IR Salida", estado: "advertencia" },
+            { id: 2, nombre: "IR Salida", estado: "alerta" },
             { id: 3, nombre: "IR Lateral Izq.", estado: "ok" },
-            { id: 4, nombre: "IR Lateral Der.", estado: "alarma" },
+            { id: 4, nombre: "IR Lateral Der.", estado: "error" },
           ]}
         />
         <TarjetaPantallaLED tituloPrincipal="Ingresar a pesaje" subtitulo="espacio libre" />

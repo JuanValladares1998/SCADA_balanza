@@ -10,8 +10,8 @@
   
   /* Colores de Estado */
   --status-ok: #16a34a;     /* Green-600 */
-  --status-warning: #ca8a04;/* Yellow-600 */
-  --status-alarm: #dc2626;  /* Red-600 */
+  --status-alerta: #ca8a04;/* Yellow-600 */
+  --status-error: #dc2626;  /* Red-600 */
   
   /* Bordes */
   --border-radius: 8px;
@@ -39,8 +39,8 @@ body {
 .scada-text-primary { color: var(--text-primary); }
 .scada-text-secondary { color: var(--text-secondary); }
 .scada-text-ok { color: var(--status-ok); }
-.scada-text-warning { color: var(--status-warning); }
-.scada-text-alarm { color: var(--status-alarm); }
+.scada-text-alerta { color: var(--status-alerta); }
+.scada-text-error { color: var(--status-error); }
 
 .scada-divider {
   border-color: var(--border-color);
@@ -52,14 +52,14 @@ body {
   border-radius: 0 var(--border-radius) var(--border-radius) 0;
 }
 
-.scada-alert-alarm {
+.scada-alert-error {
   background-color: #fef2f2;
-  border-left-color: var(--status-alarm);
+  border-left-color: var(--status-error);
 }
 
-.scada-alert-warning {
+.scada-alert-alerta {
   background-color: #fefce8;
-  border-left-color: var(--status-warning);
+  border-left-color: var(--status-alerta);
 }
 
 .scada-alert-ok {
@@ -83,12 +83,12 @@ body {
   border-color: #86efac;
 }
 
-.bg-status-warning {
+.bg-status-alerta {
   background-color: #fefce8;
   border-color: #fde047;
 }
 
-.bg-status-alarm {
+.bg-status-error {
   background-color: #fef2f2;
   border-color: #fca5a5;
 }

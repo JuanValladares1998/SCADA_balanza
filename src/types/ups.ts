@@ -31,14 +31,14 @@ export interface UpsEstado {
     estadoBateria: BateriaEstado;
 
     // Alertas Digitales
-    sobrecargaAlarma: boolean;
+    sobrecargaerrora: boolean;
     falloInterno: boolean;
 }
 
 export interface UpsEvento {
     id: string,
     timestamp: string; // ISO Date string
-    evento: string; // Ej: "Cambio de Modo", "Alarma de Sobrecarga", etc.
+    evento: string; // Ej: "Cambio de Modo", "errora de Sobrecarga", etc.
     descripcion: string;
     duracionSegunods?: number; // Opcional, duración del evento si aplica   
 }

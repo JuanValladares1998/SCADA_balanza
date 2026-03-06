@@ -1,19 +1,13 @@
-type EstadoSensor = "alarma" | "advertencia" | "ok";
+import type { Estado } from "../../../types/Estado";
 
 type SensorInfrarrojo = {
   id: number;
   nombre: string;
-  estado: EstadoSensor;
+  estado: Estado;
 };
 
 type PropiedadesTarjetaSensoresIR = {
   sensores: SensorInfrarrojo[];
-};
-
-const mapaEstadoClase: Record<EstadoSensor, "alarm" | "warning" | "ok"> = {
-  alarma: "alarm",
-  advertencia: "warning",
-  ok: "ok",
 };
 
 function TarjetaSensoresIR({ sensores }: PropiedadesTarjetaSensoresIR) {
@@ -29,11 +23,11 @@ function TarjetaSensoresIR({ sensores }: PropiedadesTarjetaSensoresIR) {
           sensores.map((sensor) => (
             <div
               key={sensor.id}
-              className={`scada-soft-box p-2 ${sensor.estado === "ok" ? "scada-soft-ok" : sensor.estado === "advertencia" ? "scada-soft-warning" : "scada-soft-error"}`}
+              className={`scada-soft-box p-2 ${sensor.estado === "ok" ? "scada-soft-ok" : sensor.estado === "alerta" ? "scada-soft-alerta" : "scada-soft-error"}`}
             >
               <div className="scada-text-secondary font-bold">{sensor.nombre}</div>
               <div
-                className={`mt-2 inline-flex w-fit items-center rounded-full px-2 py-1 text-[10px] font-bold uppercase scada-chip bg-status-${mapaEstadoClase[sensor.estado]} scada-text-${mapaEstadoClase[sensor.estado]}`}
+                className={`mt-2 inline-flex w-fit items-center rounded-full px-2 py-1 text-[10px] font-bold uppercase scada-chip bg-status-${sensor.estado} scada-text-${sensor.estado}`}
               >
                 {sensor.estado}
               </div>

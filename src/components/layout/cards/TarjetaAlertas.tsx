@@ -1,11 +1,10 @@
 import { useState, useMemo } from "react";
 import { formatearFechaParaInput } from "../../../utils/fechas";
-
-type EstadoAlerta = "alarma" | "advertencia" | "ok";
+import type { Estado } from "../../../types/Estado";
 
 type AlertaSistema = {
   id: number;
-  estado: EstadoAlerta;
+  estado: Estado;
   titulo: string;
   descripcion: string;
   hora: string;
@@ -13,12 +12,6 @@ type AlertaSistema = {
 
 type PropiedadesTarjetaAlertas = {
   alertas: AlertaSistema[];
-};
-
-const mapaEstadoClase: Record<EstadoAlerta, "alarm" | "warning" | "ok"> = {
-  alarma: "alarm",
-  advertencia: "warning",
-  ok: "ok",
 };
 
 function formatearFechaHora(valor?: string) {
@@ -128,21 +121,21 @@ function TarjetaAlertas({ alertas }: PropiedadesTarjetaAlertas) {
           alertasFiltradas.map((alerta) => (
             <div
               key={alerta.id}
-              className={`flex items-start gap-3 p-2 scada-alert scada-alert-${mapaEstadoClase[alerta.estado]}`}
+              className={`flex items-start gap-3 p-2 scada-alert scada-alert-${alerta.estado}`}
             >
               <i
-                className={`ph-fill ph-${alerta.estado === "alarma"
-                  ? "warning-circle"
-                  : alerta.estado === "advertencia"
-                    ? "warning"
+                className={`ph-fill ph-${alerta.estado === "error"
+                  ? "alerta-circle"
+                  : alerta.estado === "alerta"
+                    ? "alerta"
                     : "info"
-                  } scada-text-${mapaEstadoClase[alerta.estado]} text-xl mt-0.5`}
+                  } scada-text-${alerta.estado} text-xl mt-0.5`}
               />
               <div>
-                <div className={`text-sm font-bold scada-text-${mapaEstadoClase[alerta.estado]}`}>
+                <div className={`text-sm font-bold scada-text-${alerta.estado}`}>
                   {alerta.titulo}
                 </div>
-                <div className={`text-xs scada-text-${mapaEstadoClase[alerta.estado]}`}>
+                <div className={`text-xs scada-text-${alerta.estado}`}>
                   {alerta.descripcion}
                 </div>
                 <div className="text-[10px] opacity-70 mt-1">
