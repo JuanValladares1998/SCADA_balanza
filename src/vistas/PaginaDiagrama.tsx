@@ -7,6 +7,45 @@ import SwitchItem from "../components/layout/edicion-layout/item-perifericos/Swi
 import UpsItem from "../components/layout/edicion-layout/item-perifericos/UpsItem";
 import BotonItem from "../components/layout/edicion-layout/BotonItem";
 
+interface ItemsProps {
+  nombre: string,
+  icono: React.ReactNode,
+  tipo: string
+}
+
+const itemsDisponibles: ItemsProps[] = [
+  {
+    nombre: "Balanza",
+    icono: <BalanzaItem h={68} w={68} colorClass="text-slate-700" />,
+    tipo: "entrada"
+  },
+  {
+    nombre: "Cámara",
+    icono: <CamaraItem h={68} w={68} colorClass="text-slate-700" />,
+    tipo: "entrada"
+  },
+  {
+    nombre: "Letrero LED",
+    icono: <LetreroItem h={68} w={68} colorClass="text-slate-700" />,
+    tipo: "salida"
+  },
+  {
+    nombre: "Sensor",
+    icono: <SensorItem h={68} w={68} colorClass="text-slate-700" />,
+    tipo: "entrada"
+  },
+  {
+    nombre: "Switch",
+    icono: <SwitchItem h={68} w={68} colorClass="text-slate-700" />,
+    tipo: "entrada"
+  },
+  {
+    nombre: "Ups",
+    icono: <UpsItem h={68} w={68} colorClass="text-slate-700" />,
+    tipo: "entrada"
+  }
+];
+
 function PaginaDiagrama() {
   return (
     <main className="p-4 h-screen flex flex-col gap-3">
@@ -37,33 +76,32 @@ function PaginaDiagrama() {
             <div>
               <h3 className="text-xs font-bold scada-text-primary mb-2">Sensores e Input</h3>
               <div className="grid grid-cols-2 gap-2">
-                <BotonItem nombre="Balanza">
-                  <BalanzaItem h={68} w={68} />
-                </BotonItem>
-                <BotonItem nombre="Camara">
-                  <CamaraItem h={68} w={68} />
-                </BotonItem>
-                <BotonItem nombre="Letrero">
-                  <LetreroItem h={68} w={68} />
-                </BotonItem>
+                {
+                  itemsDisponibles
+                    .filter((item) => item.tipo === "entrada")
+                    .map((item) =>
+
+                      <BotonItem nombre={item.nombre}>
+                        {item.icono}
+                      </BotonItem>
+                    )
+                }
               </div>
             </div>
 
             <div>
               <h3 className="text-xs font-bold scada-text-primary mb-2">Señales y Salidas</h3>
               <div className="grid grid-cols-2 gap-2">
-                <div className="scada-chip p-2 text-center text-[10px] scada-text-secondary">
-                  <div className="flex justify-center mb-1"><SwitchItem h={68} w={68} /></div>
-                  Switch
-                </div>
-                <div className="scada-chip p-2 text-center text-[10px] scada-text-secondary">
-                  <div className="flex justify-center mb-1"><LetreroItem h={68} w={68} /></div>
-                  Letrero LED
-                </div>
-                <div className="scada-chip p-2 text-center text-[10px] scada-text-secondary">
-                  <div className="flex justify-center mb-1"><UpsItem h={68} w={68} /></div>
-                  UPS
-                </div>
+                {
+                  itemsDisponibles
+                    .filter((item) => item.tipo === "salida")
+                    .map((item) =>
+
+                      <BotonItem nombre={item.nombre}>
+                        {item.icono}
+                      </BotonItem>
+                    )
+                }
               </div>
             </div>
           </div>
@@ -77,7 +115,7 @@ function PaginaDiagrama() {
 
             <div className="absolute top-20 left-20 w-36 scada-card border-2 border-emerald-400 rounded p-2 flex flex-col items-center z-20">
               <div className="w-3 h-3 rounded-full bg-emerald-500 absolute -top-1.5" />
-              <div><BalanzaItem h={68} w={68} /></div>
+              <div><BalanzaItem h={68} w={68} colorClass="text-slate-700" /></div>
               <span className="text-xs font-bold mt-1 scada-text-primary">Bascula #1</span>
               <div className="w-3 h-3 rounded-full bg-emerald-500 absolute -bottom-1.5" />
             </div>

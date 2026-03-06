@@ -1,11 +1,13 @@
 interface ItemProps {
   h: number;
   w: number;
+  colorClass?: string;
 }
 
-function BalanzaItem({ h, w }: ItemProps) {
+function BalanzaItem({ h, w, colorClass = "text-current" }: ItemProps) {
   return (
     <svg
+      className={colorClass}
       width={w}
       height={h}
       viewBox="0 0 24 24"
