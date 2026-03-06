@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent, type ReactNode } from "react";
+import { useRef, useState, type DragEvent, type MouseEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import ReactFlow, {
   Background,
@@ -86,6 +86,7 @@ function PaginaDiagrama() {
   const contenedorReactFlowRef = useRef<HTMLDivElement | null>(null);
   const [instanciaReactFlow, setInstanciaReactFlow] = useState<ReactFlowInstance | null>(null);
   const [nodos, setNodos] = useState<Node<DatosNodoPeriferico>[]>(nodosIniciales);
+  const [nodoSeleccionado, setNodoSeleccionado] = useState<Node<DatosNodoPeriferico> | null>(null);
 
   const manejarInicioArrastre = (item: ItemDisponible) => (event: DragEvent<HTMLDivElement>) => {
     event.dataTransfer.setData(
@@ -134,6 +135,46 @@ function PaginaDiagrama() {
     };
 
     setNodos((nodosActuales) => [...nodosActuales, nuevoNodo]);
+  };
+
+  const manejarClickNodo = (_event: MouseEvent, nodo: Node<DatosNodoPeriferico>) => {
+    setNodoSeleccionado(nodo);
+  };
+
+  const manejarClickPanel = () => {
+    setNodoSeleccionado(null);
+  };
+
+  const actualizarNodoSeleccionado = (cambios: Partial<DatosNodoPeriferico>) => {
+    if (!nodoSeleccionado) {
+      return;
+    }
+
+    setNodos((nodosActuales) =>
+      nodosActuales.map((nodo) =>
+        nodo.id === nodoSeleccionado.id
+          ? {
+              ...nodo,
+              data: {
+                ...nodo.data,
+                ...cambios,
+              },
+            }
+          : nodo,
+      ),
+    );
+
+    setNodoSeleccionado((nodoActual) =>
+      nodoActual
+        ? {
+            ...nodoActual,
+            data: {
+              ...nodoActual.data,
+              ...cambios,
+            },
+          }
+        : null,
+    );
   };
 
   return (
@@ -213,6 +254,8 @@ function PaginaDiagrama() {
               nodes={nodos}
               nodeTypes={tiposNodo}
               onInit={setInstanciaReactFlow}
+              onNodeClick={manejarClickNodo}
+              onPaneClick={manejarClickPanel}
               fitView
               minZoom={0.5}
               maxZoom={1.8}
@@ -231,43 +274,74 @@ function PaginaDiagrama() {
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="scada-chip p-2">
-              <div className="text-sm font-bold scada-text-primary">Bascula #1</div>
-              <div className="text-[10px] scada-text-secondary">ID: node_8472</div>
+              <div className="text-sm font-bold scada-text-primary">
+                {nodoSeleccionado?.data.nombre ?? "Sin seleccion"}
+              </div>
+              <div className="text-[10px] scada-text-secondary">
+                ID: {nodoSeleccionado?.id ?? "-"}
+              </div>
             </div>
 
             <label className="block">
               <span className="text-xs font-semibold scada-text-secondary">Etiqueta Visual</span>
               <input
                 type="text"
-                defaultValue="Bascula Entrada"
+                value={nodoSeleccionado?.data.nombre ?? ""}
                 className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm outline-none"
+                onChange={(event) => actualizarNodoSeleccionado({ nombre: event.target.value })}
+                disabled={!nodoSeleccionado}
               />
             </label>
 
             <label className="block">
+              <span className="text-xs font-semibold scada-text-secondary">Tipo de periférico</span>
+              <select
+                value={nodoSeleccionado?.data.tipoPeriferico ?? ""}
+                className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm"
+                onChange={(event) =>
+                  actualizarNodoSeleccionado({
+                    tipoPeriferico: event.target.value as TipoPeriferico,
+                  })
+                }
+                disabled={!nodoSeleccionado}
+              >
+                <option value="" disabled>
+                  Selecciona un nodo
+                </option>
+                <option value="balanza">Balanza</option>
+                <option value="camara">Camara</option>
+                <option value="letrero-led">Letrero LED</option>
+                <option value="sensor">Sensor</option>
+                <option value="switch">Switch</option>
+                <option value="ups">UPS</option>
+              </select>
+            </label>
+
+            {/* <label className="block">
               <span className="text-xs font-semibold scada-text-secondary">Variable de Peso (Tag)</span>
-              <select className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm">
+              <select className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm" disabled={!nodoSeleccionado}>
                 <option>PLC1.Analog.Weight_In</option>
                 <option>PLC1.Analog.Weight_Out</option>
                 <option>Sin Asignar</option>
               </select>
-            </label>
+            </label> */}
 
-            <label className="block">
+            {/* <label className="block">
               <span className="text-xs font-semibold scada-text-secondary">Variable de Estado</span>
-              <select className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm">
+              <select className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm" disabled={!nodoSeleccionado}>
                 <option>PLC1.Status.Scale_Ready</option>
                 <option>PLC1.Status.Scale_Error</option>
               </select>
-            </label>
+            </label> */}
 
-            <div className="grid grid-cols-2 gap-2">
+            {/* <div className="grid grid-cols-2 gap-2">
               <label className="block">
                 <span className="text-[10px] font-semibold scada-text-secondary">Max (kg)</span>
                 <input
                   type="number"
                   defaultValue="45000"
                   className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm"
+                  disabled={!nodoSeleccionado}
                 />
               </label>
               <label className="block">
@@ -276,9 +350,10 @@ function PaginaDiagrama() {
                   type="number"
                   defaultValue="0"
                   className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm"
+                  disabled={!nodoSeleccionado}
                 />
               </label>
-            </div>
+            </div> */}
           </div>
         </aside>
       </section>
