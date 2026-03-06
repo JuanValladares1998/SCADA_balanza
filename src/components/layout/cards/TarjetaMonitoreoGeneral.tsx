@@ -22,7 +22,7 @@ function TarjetaMonitoreoGeneral({
         </div>
       </div>
 
-      <div className="text-lg font-bold scada-text-primary whitespace-nowrap">{valor}</div>
+      <div className="text-md font-medium scada-text-primary whitespace-nowrap">{valor}</div>
     </article>
   );
 }

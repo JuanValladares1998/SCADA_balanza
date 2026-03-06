@@ -72,31 +72,31 @@ function PaginaNivel1() {
                     ]}
                 />
 
-                <TarjetaContenedorVertical titulo="Control Balanza" icono={<BalanzaItem />}>
+                <TarjetaContenedorVertical titulo="Control Balanza" icono={<BalanzaItem h={20} w={20} />}>
                     {balanzas.map((balanza) => (
                         <TarjetaMonitoreoGeneral key={balanza.nombre} {...balanza} />
                     ))}
                 </TarjetaContenedorVertical>
 
-                <TarjetaContenedorVertical titulo="Control Camaras" icono={<CamaraItem />}>
+                <TarjetaContenedorVertical titulo="Control Camaras" icono={<CamaraItem h={20} w={20} />}>
                     {camaras.map((camara) => (
                         <TarjetaMonitoreoGeneral key={camara.nombre} {...camara} />
                     ))}
                 </TarjetaContenedorVertical>
 
-                <TarjetaContenedorVertical titulo="Control Sensores" icono={<SensorItem />}>
+                <TarjetaContenedorVertical titulo="Control Sensores" icono={<SensorItem h={20} w={20} />}>
                     {sensores.map((sensor) => (
                         <TarjetaMonitoreoGeneral key={sensor.nombre} {...sensor} />
                     ))}
                 </TarjetaContenedorVertical>
 
-                <TarjetaContenedorVertical titulo="Control Switch" icono={<SwitchItem />}>
+                <TarjetaContenedorVertical titulo="Control Switch" icono={<SwitchItem h={20} w={20} />}>
                     {switches.map((switchItem) => (
                         <TarjetaMonitoreoGeneral key={switchItem.nombre} {...switchItem} />
                     ))}
                 </TarjetaContenedorVertical>
 
-                <TarjetaContenedorVertical titulo="Control UPS" icono={<UpsItem/>}>
+                <TarjetaContenedorVertical titulo="Control UPS" icono={<UpsItem h={20} w={20} />}>
                     {equiposUps.map((ups) => (
                         <TarjetaMonitoreoGeneral key={ups.nombre} {...ups} />
                     ))}
