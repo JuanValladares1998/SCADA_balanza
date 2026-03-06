@@ -1,9 +1,15 @@
 import { useRef, useState, type DragEvent, type MouseEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import ReactFlow, {
+  addEdge,
+  applyEdgeChanges,
   applyNodeChanges,
   Background,
+  ConnectionLineType,
   Controls,
+  type Connection,
+  type Edge,
+  type EdgeChange,
   type Node,
   type NodeChange,
   type ReactFlowInstance,
@@ -84,11 +90,15 @@ const nodosIniciales: Node<DatosNodoPeriferico>[] = [
   },
 ];
 
+const aristasIniciales: Edge[] = [];
+
 function PaginaDiagrama() {
   const contenedorReactFlowRef = useRef<HTMLDivElement | null>(null);
   const [instanciaReactFlow, setInstanciaReactFlow] = useState<ReactFlowInstance | null>(null);
   const [nodos, setNodos] = useState<Node<DatosNodoPeriferico>[]>(nodosIniciales);
+  const [aristas, setAristas] = useState<Edge[]>(aristasIniciales);
   const [nodoSeleccionado, setNodoSeleccionado] = useState<Node<DatosNodoPeriferico> | null>(null);
+  const [aristaSeleccionada, setAristaSeleccionada] = useState<Edge | null>(null);
 
   const manejarInicioArrastre = (item: ItemDisponible) => (event: DragEvent<HTMLDivElement>) => {
     event.dataTransfer.setData(
@@ -141,10 +151,48 @@ function PaginaDiagrama() {
 
   const manejarClickNodo = (_event: MouseEvent, nodo: Node<DatosNodoPeriferico>) => {
     setNodoSeleccionado(nodo);
+    setAristaSeleccionada(null);
+  };
+
+  const manejarClickArista = (_event: MouseEvent, arista: Edge) => {
+    setAristaSeleccionada(arista);
+    setNodoSeleccionado(null);
   };
 
   const manejarClickPanel = () => {
     setNodoSeleccionado(null);
+    setAristaSeleccionada(null);
+  };
+
+  const manejarCambioAristas = (cambios: EdgeChange[]) => {
+    setAristas((aristasActuales) => {
+      const aristasActualizadas = applyEdgeChanges(cambios, aristasActuales);
+
+      if (aristaSeleccionada) {
+        const aristaActualizada =
+          aristasActualizadas.find((arista) => arista.id === aristaSeleccionada.id) ?? null;
+        setAristaSeleccionada(aristaActualizada);
+      }
+
+      return aristasActualizadas;
+    });
+  };
+
+  const manejarConectar = (conexion: Connection) => {
+    setAristas((aristasActuales) =>
+      addEdge(
+        {
+          ...conexion,
+          id: `arista-${Date.now()}`,
+          type: "step",
+          style: {
+            stroke: "#64748b",
+            strokeWidth: 3,
+          },
+        },
+        aristasActuales,
+      ),
+    );
   };
 
   const manejarEliminarNodoSeleccionado = () => {
@@ -154,6 +202,15 @@ function PaginaDiagrama() {
       nodosActuales.filter((nodo) => nodo.id !== nodoSeleccionado.id),
     );
     setNodoSeleccionado(null);
+  };
+
+  const manejarEliminarAristaSeleccionada = () => {
+    if (!aristaSeleccionada) return;
+
+    setAristas((aristasActuales) =>
+      aristasActuales.filter((arista) => arista.id !== aristaSeleccionada.id),
+    );
+    setAristaSeleccionada(null);
   };
 
   const manejarDuplicarNodoSeleccionado = () => {
@@ -185,6 +242,21 @@ function PaginaDiagrama() {
       nodoSeleccionado.position.x + 40,
       nodoSeleccionado.position.y + 40,
       { zoom: 1.2, duration: 500 },
+    );
+  };
+
+  const manejarCentrarEnArista = () => {
+    if (!aristaSeleccionada || !instanciaReactFlow) return;
+
+    const nodoOrigen = nodos.find((nodo) => nodo.id === aristaSeleccionada.source);
+    const nodoDestino = nodos.find((nodo) => nodo.id === aristaSeleccionada.target);
+
+    if (!nodoOrigen || !nodoDestino) return;
+
+    instanciaReactFlow.setCenter(
+      (nodoOrigen.position.x + nodoDestino.position.x) / 2 + 40,
+      (nodoOrigen.position.y + nodoDestino.position.y) / 2 + 40,
+      { zoom: 1.1, duration: 500 },
     );
   };
 
@@ -310,11 +382,23 @@ function PaginaDiagrama() {
           >
             <ReactFlow
               nodes={nodos}
+              edges={aristas}
               nodeTypes={tiposNodo}
               onInit={setInstanciaReactFlow}
               onNodesChange={manejarCambioNodos}
+              onEdgesChange={manejarCambioAristas}
+              onConnect={manejarConectar}
               onNodeClick={manejarClickNodo}
+              onEdgeClick={manejarClickArista}
               onPaneClick={manejarClickPanel}
+              connectionLineType={ConnectionLineType.Step}
+              defaultEdgeOptions={{
+                type: "step",
+                style: {
+                  stroke: "#64748b",
+                  strokeWidth: 3,
+                },
+              }}
               fitView
               minZoom={0.5}
               maxZoom={1.8}
@@ -333,29 +417,31 @@ function PaginaDiagrama() {
 
           <div className="p-4 border-t scada-divider border-b">
             <div className="flex items-center gap-2">
+              {nodoSeleccionado ? (
+                <button
+                  type="button"
+                  onClick={manejarDuplicarNodoSeleccionado}
+                  disabled={!nodoSeleccionado}
+                  title="Duplicar nodo"
+                  className="h-9 w-9 flex items-center justify-center text-sm font-semibold scada-chip scada-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <i className="ph ph-copy" />
+                </button>
+              ) : null}
               <button
                 type="button"
-                onClick={manejarDuplicarNodoSeleccionado}
-                disabled={!nodoSeleccionado}
-                title="Duplicar nodo"
-                className="h-9 w-9 flex items-center justify-center text-sm font-semibold scada-chip scada-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <i className="ph ph-copy" />
-              </button>
-              <button
-                type="button"
-                onClick={manejarCentrarEnNodo}
-                disabled={!nodoSeleccionado}
-                title="Centrar en nodo"
+                onClick={nodoSeleccionado ? manejarCentrarEnNodo : manejarCentrarEnArista}
+                disabled={!nodoSeleccionado && !aristaSeleccionada}
+                title={nodoSeleccionado ? "Centrar en nodo" : "Centrar en arista"}
                 className="h-9 w-9 flex items-center justify-center text-sm font-semibold scada-chip scada-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <i className="ph ph-crosshair" />
               </button>
               <button
                 type="button"
-                onClick={manejarEliminarNodoSeleccionado}
-                disabled={!nodoSeleccionado}
-                title="Eliminar nodo"
+                onClick={nodoSeleccionado ? manejarEliminarNodoSeleccionado : manejarEliminarAristaSeleccionada}
+                disabled={!nodoSeleccionado && !aristaSeleccionada}
+                title={nodoSeleccionado ? "Eliminar nodo" : "Eliminar arista"}
                 className="h-9 w-9 flex items-center justify-center text-sm font-semibold scada-chip scada-text-error disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <i className="ph ph-trash" />
@@ -366,10 +452,10 @@ function PaginaDiagrama() {
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="scada-chip p-2">
               <div className="text-sm font-bold scada-text-primary">
-                {nodoSeleccionado?.data.nombre ?? "Sin seleccion"}
+                {nodoSeleccionado?.data.nombre ?? aristaSeleccionada?.id ?? "Sin seleccion"}
               </div>
               <div className="text-[10px] scada-text-secondary">
-                ID: {nodoSeleccionado?.id ?? "-"}
+                ID: {nodoSeleccionado?.id ?? aristaSeleccionada?.id ?? "-"}
               </div>
             </div>
 

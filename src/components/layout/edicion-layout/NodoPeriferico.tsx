@@ -1,4 +1,4 @@
-import type { NodeProps } from "reactflow";
+import { Handle, Position, type NodeProps } from "reactflow";
 import BalanzaItem from "./item-perifericos/BalanzaItem";
 import CamaraItem from "./item-perifericos/CamaraItem";
 import LetreroItem from "./item-perifericos/LetreroItem";
@@ -41,10 +41,27 @@ function obtenerIcono(tipoPeriferico: TipoPeriferico) {
 function NodoPeriferico({ data, selected }: NodeProps<DatosNodoPeriferico>) {
   return (
     <div
-      className={`w-20 h-20 scada-card flex flex-col items-center justify-center gap-1 text-center px-2 ${
-        selected ? "ring-2 ring-emerald-400" : ""
-      }`}
+      className={`w-20 h-20 scada-card flex flex-col items-center justify-center gap-1 text-center px-2 ${selected ? "ring-2 ring-emerald-400" : ""
+        }`}
     >
+      <Handle
+        id="entrada"
+        type="target"
+        position={Position.Left}
+        className="!w-4 !h-4 !flex !items-center !justify-center !border-2 !border-slate-500 !bg-slate-100 !rounded-full"
+        title="entrada"
+      >
+        <i className="ph-fill ph-caret-circle-right text-[10px] text-slate-600 pointer-events-none"></i>
+      </Handle>
+      <Handle
+        id="salida"
+        type="source"
+        position={Position.Right}
+        className="!w-4 !h-4 !flex !items-center !justify-center !border-2 !border-slate-500 !bg-slate-100 !rounded-full"
+        title="entrada"
+      >
+        <i className="ph-fill ph-caret-circle-right text-[10px] text-slate-600 pointer-events-none"></i>
+      </Handle>
       <div className="flex items-center justify-center">{obtenerIcono(data.tipoPeriferico)}</div>
       <div className="text-[11px] font-semibold scada-text-primary leading-tight">{data.nombre}</div>
     </div>
