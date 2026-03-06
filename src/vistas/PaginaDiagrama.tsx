@@ -1,9 +1,11 @@
 import { useRef, useState, type DragEvent, type MouseEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import ReactFlow, {
+  applyNodeChanges,
   Background,
   Controls,
   type Node,
+  type NodeChange,
   type ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
@@ -145,6 +147,62 @@ function PaginaDiagrama() {
     setNodoSeleccionado(null);
   };
 
+  const manejarEliminarNodoSeleccionado = () => {
+    if (!nodoSeleccionado) return;
+
+    setNodos((nodosActuales) =>
+      nodosActuales.filter((nodo) => nodo.id !== nodoSeleccionado.id),
+    );
+    setNodoSeleccionado(null);
+  };
+
+  const manejarDuplicarNodoSeleccionado = () => {
+    if (!nodoSeleccionado) return;
+
+    const nodoDuplicado: Node<DatosNodoPeriferico> = {
+      ...nodoSeleccionado,
+      id: `${nodoSeleccionado.id}-copia-${Date.now()}`,
+      position: {
+        x: nodoSeleccionado.position.x + 40,
+        y: nodoSeleccionado.position.y + 40,
+      },
+      selected: false,
+      dragging: false,
+      data: {
+        ...nodoSeleccionado.data,
+        nombre: `${nodoSeleccionado.data.nombre} copia`,
+      },
+    };
+
+    setNodos((nodosActuales) => [...nodosActuales, nodoDuplicado]);
+    setNodoSeleccionado(nodoDuplicado);
+  };
+
+  const manejarCentrarEnNodo = () => {
+    if (!nodoSeleccionado || !instanciaReactFlow) return;
+
+    instanciaReactFlow.setCenter(
+      nodoSeleccionado.position.x + 40,
+      nodoSeleccionado.position.y + 40,
+      { zoom: 1.2, duration: 500 },
+    );
+  };
+
+  const manejarCambioNodos = (cambios: NodeChange[]) => {
+    setNodos((nodosActuales) => {
+      const nodosActualizados = applyNodeChanges(cambios, nodosActuales);
+
+      if (nodoSeleccionado) {
+        const nodoSeleccionadoActualizado =
+          nodosActualizados.find((nodo) => nodo.id === nodoSeleccionado.id) ?? null;
+
+        setNodoSeleccionado(nodoSeleccionadoActualizado);
+      }
+
+      return nodosActualizados;
+    });
+  };
+
   const actualizarNodoSeleccionado = (cambios: Partial<DatosNodoPeriferico>) => {
     if (!nodoSeleccionado) {
       return;
@@ -154,12 +212,12 @@ function PaginaDiagrama() {
       nodosActuales.map((nodo) =>
         nodo.id === nodoSeleccionado.id
           ? {
-              ...nodo,
-              data: {
-                ...nodo.data,
-                ...cambios,
-              },
-            }
+            ...nodo,
+            data: {
+              ...nodo.data,
+              ...cambios,
+            },
+          }
           : nodo,
       ),
     );
@@ -167,12 +225,12 @@ function PaginaDiagrama() {
     setNodoSeleccionado((nodoActual) =>
       nodoActual
         ? {
-            ...nodoActual,
-            data: {
-              ...nodoActual.data,
-              ...cambios,
-            },
-          }
+          ...nodoActual,
+          data: {
+            ...nodoActual.data,
+            ...cambios,
+          },
+        }
         : null,
     );
   };
@@ -254,6 +312,7 @@ function PaginaDiagrama() {
               nodes={nodos}
               nodeTypes={tiposNodo}
               onInit={setInstanciaReactFlow}
+              onNodesChange={manejarCambioNodos}
               onNodeClick={manejarClickNodo}
               onPaneClick={manejarClickPanel}
               fitView
@@ -270,6 +329,38 @@ function PaginaDiagrama() {
         <aside className="w-72 scada-card shadow-sm flex flex-col min-h-0">
           <div className="p-3 text-[11px] font-semibold uppercase scada-text-secondary border-b scada-divider">
             Propiedades
+          </div>
+
+          <div className="p-4 border-t scada-divider border-b">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={manejarDuplicarNodoSeleccionado}
+                disabled={!nodoSeleccionado}
+                title="Duplicar nodo"
+                className="h-9 w-9 flex items-center justify-center text-sm font-semibold scada-chip scada-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <i className="ph ph-copy" />
+              </button>
+              <button
+                type="button"
+                onClick={manejarCentrarEnNodo}
+                disabled={!nodoSeleccionado}
+                title="Centrar en nodo"
+                className="h-9 w-9 flex items-center justify-center text-sm font-semibold scada-chip scada-text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <i className="ph ph-crosshair" />
+              </button>
+              <button
+                type="button"
+                onClick={manejarEliminarNodoSeleccionado}
+                disabled={!nodoSeleccionado}
+                title="Eliminar nodo"
+                className="h-9 w-9 flex items-center justify-center text-sm font-semibold scada-chip scada-text-error disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <i className="ph ph-trash" />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
