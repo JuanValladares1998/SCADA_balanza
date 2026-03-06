@@ -1,73 +1,141 @@
-import type { ReactNode } from "react";
+import { useRef, useState, type DragEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import SensorItem from "../components/layout/edicion-layout/item-perifericos/SensorItem";
+import ReactFlow, {
+  Background,
+  Controls,
+  type Node,
+  type ReactFlowInstance,
+} from "reactflow";
+import "reactflow/dist/style.css";
+
+import BotonItem from "../components/layout/edicion-layout/BotonItem";
+import NodoPeriferico, {
+  type DatosNodoPeriferico,
+  type TipoPeriferico,
+} from "../components/layout/edicion-layout/NodoPeriferico";
 import BalanzaItem from "../components/layout/edicion-layout/item-perifericos/BalanzaItem";
 import CamaraItem from "../components/layout/edicion-layout/item-perifericos/CamaraItem";
 import LetreroItem from "../components/layout/edicion-layout/item-perifericos/LetreroItem";
+import SensorItem from "../components/layout/edicion-layout/item-perifericos/SensorItem";
 import SwitchItem from "../components/layout/edicion-layout/item-perifericos/SwitchItem";
 import UpsItem from "../components/layout/edicion-layout/item-perifericos/UpsItem";
-import BotonItem from "../components/layout/edicion-layout/BotonItem";
-import ReactFlow, { Background, Controls, type Node } from "reactflow";
-import "reactflow/dist/style.css";
 
-interface ItemsProps {
+type ItemDisponible = {
   nombre: string;
   icono: ReactNode;
-  tipo: string;
-}
+  tipo: "entrada" | "salida";
+  tipoPeriferico: TipoPeriferico;
+};
 
-const itemsDisponibles: ItemsProps[] = [
+const itemsDisponibles: ItemDisponible[] = [
   {
     nombre: "Balanza",
     icono: <BalanzaItem h={68} w={68} colorClass="text-slate-700" />,
-    tipo: "entrada"
+    tipo: "entrada",
+    tipoPeriferico: "balanza",
   },
   {
-    nombre: "Cámara",
+    nombre: "Camara",
     icono: <CamaraItem h={68} w={68} colorClass="text-slate-700" />,
-    tipo: "entrada"
+    tipo: "entrada",
+    tipoPeriferico: "camara",
   },
   {
     nombre: "Letrero LED",
     icono: <LetreroItem h={68} w={68} colorClass="text-slate-700" />,
-    tipo: "salida"
+    tipo: "salida",
+    tipoPeriferico: "letrero-led",
   },
   {
     nombre: "Sensor",
     icono: <SensorItem h={68} w={68} colorClass="text-slate-700" />,
-    tipo: "entrada"
+    tipo: "entrada",
+    tipoPeriferico: "sensor",
   },
   {
     nombre: "Switch",
     icono: <SwitchItem h={68} w={68} colorClass="text-slate-700" />,
-    tipo: "entrada"
+    tipo: "entrada",
+    tipoPeriferico: "switch",
   },
   {
     nombre: "Ups",
     icono: <UpsItem h={68} w={68} colorClass="text-slate-700" />,
-    tipo: "entrada"
-  }
+    tipo: "entrada",
+    tipoPeriferico: "ups",
+  },
 ];
 
-const nodosIniciales: Node[] = [
+const tiposNodo = {
+  periferico: NodoPeriferico,
+};
+
+const nodosIniciales: Node<DatosNodoPeriferico>[] = [
   {
     id: "nodo-prueba",
     position: { x: 220, y: 140 },
-    data: { label: "Nodo de prueba" },
-    style: {
-      background: "#e5e7eb",
-      color: "#1e293b",
-      border: "1px solid #94a3b8",
-      borderRadius: "8px",
-      padding: "10px 14px",
-      fontSize: "12px",
-      fontWeight: 600,
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    type: "periferico",
+    data: {
+      nombre: "Nodo de prueba",
+      tipoPeriferico: "balanza",
     },
   },
 ];
 
 function PaginaDiagrama() {
+  const contenedorReactFlowRef = useRef<HTMLDivElement | null>(null);
+  const [instanciaReactFlow, setInstanciaReactFlow] = useState<ReactFlowInstance | null>(null);
+  const [nodos, setNodos] = useState<Node<DatosNodoPeriferico>[]>(nodosIniciales);
+
+  const manejarInicioArrastre = (item: ItemDisponible) => (event: DragEvent<HTMLDivElement>) => {
+    event.dataTransfer.setData(
+      "application/reactflow",
+      JSON.stringify({
+        nombre: item.nombre,
+        tipo: item.tipo,
+        tipoPeriferico: item.tipoPeriferico,
+      }),
+    );
+    event.dataTransfer.effectAllowed = "move";
+  };
+
+  const manejarDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  };
+
+  const manejarDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    if (!instanciaReactFlow || !contenedorReactFlowRef.current) {
+      return;
+    }
+
+    const itemSerializado = event.dataTransfer.getData("application/reactflow");
+
+    if (!itemSerializado) {
+      return;
+    }
+
+    const item: Pick<ItemDisponible, "nombre" | "tipo" | "tipoPeriferico"> = JSON.parse(itemSerializado);
+    const posicion = instanciaReactFlow.screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    const nuevoNodo: Node<DatosNodoPeriferico> = {
+      id: `${item.tipoPeriferico}-${Date.now()}`,
+      position: posicion,
+      type: "periferico",
+      data: {
+        nombre: item.nombre,
+        tipoPeriferico: item.tipoPeriferico,
+      },
+    };
+
+    setNodos((nodosActuales) => [...nodosActuales, nuevoNodo]);
+  };
+
   return (
     <main className="p-4 h-screen flex flex-col gap-3">
       <header className="scada-card shadow-sm p-2 flex items-center justify-between">
@@ -85,51 +153,66 @@ function PaginaDiagrama() {
             Volver
           </Link>
           <button className="px-3 py-1 text-xs font-semibold scada-chip scada-text-secondary">Cancelar</button>
-          <button className="px-3 py-1 text-xs font-semibold scada-chip scada-chip-ok scada-text-ok">Guardar Diagrama</button>
+          <button className="px-3 py-1 text-xs font-semibold scada-chip scada-chip-ok scada-text-ok">
+            Guardar Diagrama
+          </button>
         </div>
       </header>
 
       <section className="flex-1 min-h-0 flex gap-3">
         <aside className="w-64 scada-card shadow-sm p-2 flex flex-col min-h-0">
-          <div className="p-2 text-[11px] font-semibold uppercase scada-text-secondary border-b scada-divider">Componentes</div>
+          <div className="p-2 text-[11px] font-semibold uppercase scada-text-secondary border-b scada-divider">
+            Componentes
+          </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-4">
             <div>
               <h3 className="text-xs font-bold scada-text-primary mb-2">Sensores e Input</h3>
               <div className="grid grid-cols-2 gap-2">
-                {
-                  itemsDisponibles
-                    .filter((item) => item.tipo === "entrada")
-                    .map((item) => (
-                      <BotonItem key={item.nombre} nombre={item.nombre}>
-                        {item.icono}
-                      </BotonItem>
-                    ))
-                }
+                {itemsDisponibles
+                  .filter((item) => item.tipo === "entrada")
+                  .map((item) => (
+                    <BotonItem
+                      key={item.nombre}
+                      nombre={item.nombre}
+                      onDragStart={manejarInicioArrastre(item)}
+                    >
+                      {item.icono}
+                    </BotonItem>
+                  ))}
               </div>
             </div>
 
             <div>
-              <h3 className="text-xs font-bold scada-text-primary mb-2">Señales y Salidas</h3>
+              <h3 className="text-xs font-bold scada-text-primary mb-2">Senales y Salidas</h3>
               <div className="grid grid-cols-2 gap-2">
-                {
-                  itemsDisponibles
-                    .filter((item) => item.tipo === "salida")
-                    .map((item) => (
-                      <BotonItem key={item.nombre} nombre={item.nombre}>
-                        {item.icono}
-                      </BotonItem>
-                    ))
-                }
+                {itemsDisponibles
+                  .filter((item) => item.tipo === "salida")
+                  .map((item) => (
+                    <BotonItem
+                      key={item.nombre}
+                      nombre={item.nombre}
+                      onDragStart={manejarInicioArrastre(item)}
+                    >
+                      {item.icono}
+                    </BotonItem>
+                  ))}
               </div>
             </div>
           </div>
         </aside>
 
         <section className="flex-1 scada-card shadow-sm relative overflow-hidden">
-          <div className="h-full w-full">
+          <div
+            ref={contenedorReactFlowRef}
+            className="h-full w-full"
+            onDragOver={manejarDragOver}
+            onDrop={manejarDrop}
+          >
             <ReactFlow
-              defaultNodes={nodosIniciales}
+              nodes={nodos}
+              nodeTypes={tiposNodo}
+              onInit={setInstanciaReactFlow}
               fitView
               minZoom={0.5}
               maxZoom={1.8}
@@ -142,7 +225,9 @@ function PaginaDiagrama() {
         </section>
 
         <aside className="w-72 scada-card shadow-sm flex flex-col min-h-0">
-          <div className="p-3 text-[11px] font-semibold uppercase scada-text-secondary border-b scada-divider">Propiedades</div>
+          <div className="p-3 text-[11px] font-semibold uppercase scada-text-secondary border-b scada-divider">
+            Propiedades
+          </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="scada-chip p-2">
@@ -179,11 +264,19 @@ function PaginaDiagrama() {
             <div className="grid grid-cols-2 gap-2">
               <label className="block">
                 <span className="text-[10px] font-semibold scada-text-secondary">Max (kg)</span>
-                <input type="number" defaultValue="45000" className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm" />
+                <input
+                  type="number"
+                  defaultValue="45000"
+                  className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm"
+                />
               </label>
               <label className="block">
                 <span className="text-[10px] font-semibold scada-text-secondary">Min (kg)</span>
-                <input type="number" defaultValue="0" className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm" />
+                <input
+                  type="number"
+                  defaultValue="0"
+                  className="mt-1 block w-full scada-soft-box px-2 py-1 text-sm"
+                />
               </label>
             </div>
           </div>

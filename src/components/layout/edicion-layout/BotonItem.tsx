@@ -1,11 +1,18 @@
+import type { DragEvent, ReactNode } from "react";
+
 interface BotonItemProps {
-    children: React.ReactNode;
+    children: ReactNode;
     nombre: string;
+    onDragStart?: (event: DragEvent<HTMLDivElement>) => void;
 }
 
-function BotonItem({ children, nombre }: BotonItemProps) {
+function BotonItem({ children, nombre, onDragStart }: BotonItemProps) {
     return (
-        <div className="scada-chip p-2 text-center text-[10px] scada-text-secondary">
+        <div
+            className="scada-chip p-2 text-center text-[10px] scada-text-secondary cursor-grab active:cursor-grabbing"
+            draggable
+            onDragStart={onDragStart}
+        >
             <div className="flex justify-center mb-1">{children}</div>
             {nombre}
         </div>
