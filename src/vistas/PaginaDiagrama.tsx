@@ -15,18 +15,18 @@ import ReactFlow, {
   type ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import iconoSwitch from "../assets/imagenes/icono_switch_poe.png";
+import iconoBalanza from "../assets/imagenes/icono_control_balanza.png";
+import iconoCamara from "../assets/imagenes/icono_camara_survision.png";
+import iconoLetrero from "../assets/imagenes/icono_cartel_LED.png";
+import iconoUps from "../assets/imagenes/icono_ups.png";
+import iconoSensor from "../assets/imagenes/icono_sensor_IR.png";
 
 import BotonItem from "../components/layout/edicion-layout/BotonItem";
 import NodoPeriferico, {
   type DatosNodoPeriferico,
   type TipoPeriferico,
 } from "../components/layout/edicion-layout/NodoPeriferico";
-import BalanzaItem from "../components/layout/edicion-layout/item-perifericos/BalanzaItem";
-import CamaraItem from "../components/layout/edicion-layout/item-perifericos/CamaraItem";
-import LetreroItem from "../components/layout/edicion-layout/item-perifericos/LetreroItem";
-import SensorItem from "../components/layout/edicion-layout/item-perifericos/SensorItem";
-import SwitchItem from "../components/layout/edicion-layout/item-perifericos/SwitchItem";
-import UpsItem from "../components/layout/edicion-layout/item-perifericos/UpsItem";
 
 type ItemDisponible = {
   nombre: string;
@@ -38,37 +38,37 @@ type ItemDisponible = {
 const itemsDisponibles: ItemDisponible[] = [
   {
     nombre: "Balanza",
-    icono: <BalanzaItem h={68} w={68} colorClass="text-slate-700" />,
+    icono: <img src={iconoBalanza} alt="Switch" className="h-[68px] w-[68px] object-contain" />,
     tipo: "entrada",
     tipoPeriferico: "balanza",
   },
   {
     nombre: "Camara",
-    icono: <CamaraItem h={68} w={68} colorClass="text-slate-700" />,
+    icono: <img src={iconoCamara} alt="Switch" className="h-[68px] w-[68px] object-contain" />,
     tipo: "entrada",
     tipoPeriferico: "camara",
   },
   {
     nombre: "Letrero LED",
-    icono: <LetreroItem h={68} w={68} colorClass="text-slate-700" />,
+    icono: <img src={iconoLetrero} alt="Switch" className="h-[68px] w-[68px] object-contain" />,
     tipo: "salida",
     tipoPeriferico: "letrero-led",
   },
   {
     nombre: "Sensor",
-    icono: <SensorItem h={68} w={68} colorClass="text-slate-700" />,
+    icono: <img src={iconoSensor} alt="Switch" className="h-[68px] w-[68px] object-contain" />,
     tipo: "entrada",
     tipoPeriferico: "sensor",
   },
   {
     nombre: "Switch",
-    icono: <SwitchItem h={68} w={68} colorClass="text-slate-700" />,
+    icono: <img src={iconoSwitch} alt="Switch" className="h-[68px] w-[68px] object-contain" />,
     tipo: "entrada",
     tipoPeriferico: "switch",
   },
   {
     nombre: "Ups",
-    icono: <UpsItem h={68} w={68} colorClass="text-slate-700" />,
+    icono: <img src={iconoUps} alt="Switch" className="h-[68px] w-[68px] object-contain" />,
     tipo: "entrada",
     tipoPeriferico: "ups",
   },

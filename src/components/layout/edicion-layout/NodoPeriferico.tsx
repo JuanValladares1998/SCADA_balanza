@@ -1,10 +1,10 @@
 import { Handle, Position, type NodeProps } from "reactflow";
-import BalanzaItem from "./item-perifericos/BalanzaItem";
-import CamaraItem from "./item-perifericos/CamaraItem";
-import LetreroItem from "./item-perifericos/LetreroItem";
-import SensorItem from "./item-perifericos/SensorItem";
-import SwitchItem from "./item-perifericos/SwitchItem";
-import UpsItem from "./item-perifericos/UpsItem";
+import iconoSwitch from "../../../assets/imagenes/icono_switch_poe.png";
+import iconoBalanza from "../../../assets/imagenes/icono_control_balanza.png";
+import iconoCamara from "../../../assets/imagenes/icono_camara_survision.png";
+import iconoLetrero from "../../../assets/imagenes/icono_cartel_LED.png";
+import iconoUps from "../../../assets/imagenes/icono_ups.png";
+import iconoSensor from "../../../assets/imagenes/icono_sensor_IR.png";
 
 export type TipoPeriferico =
   | "balanza"
@@ -22,17 +22,17 @@ export type DatosNodoPeriferico = {
 function obtenerIcono(tipoPeriferico: TipoPeriferico) {
   switch (tipoPeriferico) {
     case "balanza":
-      return <BalanzaItem h={34} w={34} colorClass="text-slate-700" />;
+      return <img src={iconoBalanza} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
     case "camara":
-      return <CamaraItem h={34} w={34} colorClass="text-slate-700" />;
+      return <img src={iconoCamara} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
     case "letrero-led":
-      return <LetreroItem h={34} w={34} colorClass="text-slate-700" />;
+      return <img src={iconoLetrero} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
     case "sensor":
-      return <SensorItem h={34} w={34} colorClass="text-slate-700" />;
+      return <img src={iconoSensor} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
     case "switch":
-      return <SwitchItem h={34} w={34} colorClass="text-slate-700" />;
+      return <img src={iconoSwitch} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
     case "ups":
-      return <UpsItem h={34} w={34} colorClass="text-slate-700" />;
+      return <img src={iconoUps} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
     default:
       return null;
   }
