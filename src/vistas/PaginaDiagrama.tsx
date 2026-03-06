@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import SensorItem from "../components/layout/edicion-layout/item-perifericos/SensorItem";
 import BalanzaItem from "../components/layout/edicion-layout/item-perifericos/BalanzaItem";
@@ -6,11 +7,13 @@ import LetreroItem from "../components/layout/edicion-layout/item-perifericos/Le
 import SwitchItem from "../components/layout/edicion-layout/item-perifericos/SwitchItem";
 import UpsItem from "../components/layout/edicion-layout/item-perifericos/UpsItem";
 import BotonItem from "../components/layout/edicion-layout/BotonItem";
+import ReactFlow, { Background, Controls, type Node } from "reactflow";
+import "reactflow/dist/style.css";
 
 interface ItemsProps {
-  nombre: string,
-  icono: React.ReactNode,
-  tipo: string
+  nombre: string;
+  icono: ReactNode;
+  tipo: string;
 }
 
 const itemsDisponibles: ItemsProps[] = [
@@ -46,6 +49,24 @@ const itemsDisponibles: ItemsProps[] = [
   }
 ];
 
+const nodosIniciales: Node[] = [
+  {
+    id: "nodo-prueba",
+    position: { x: 220, y: 140 },
+    data: { label: "Nodo de prueba" },
+    style: {
+      background: "#e5e7eb",
+      color: "#1e293b",
+      border: "1px solid #94a3b8",
+      borderRadius: "8px",
+      padding: "10px 14px",
+      fontSize: "12px",
+      fontWeight: 600,
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  },
+];
+
 function PaginaDiagrama() {
   return (
     <main className="p-4 h-screen flex flex-col gap-3">
@@ -79,12 +100,11 @@ function PaginaDiagrama() {
                 {
                   itemsDisponibles
                     .filter((item) => item.tipo === "entrada")
-                    .map((item) =>
-
-                      <BotonItem nombre={item.nombre}>
+                    .map((item) => (
+                      <BotonItem key={item.nombre} nombre={item.nombre}>
                         {item.icono}
                       </BotonItem>
-                    )
+                    ))
                 }
               </div>
             </div>
@@ -95,30 +115,29 @@ function PaginaDiagrama() {
                 {
                   itemsDisponibles
                     .filter((item) => item.tipo === "salida")
-                    .map((item) =>
-
-                      <BotonItem nombre={item.nombre}>
+                    .map((item) => (
+                      <BotonItem key={item.nombre} nombre={item.nombre}>
                         {item.icono}
                       </BotonItem>
-                    )
+                    ))
                 }
               </div>
             </div>
           </div>
         </aside>
 
-        <section className="flex-1 scada-card shadow-sm relative overflow-hidden flex items-center justify-center">
-          <div className="engineering-grid absolute inset-0 opacity-40" />
-
-          <div className="relative w-[600px] h-[400px] border-2 border-dashed scada-divider rounded flex items-center justify-center">
-            <span className="scada-text-secondary text-sm">Area de Trabajo (React Flow)</span>
-
-            <div className="absolute top-20 left-20 w-36 scada-card border-2 border-emerald-400 rounded p-2 flex flex-col items-center z-20">
-              <div className="w-3 h-3 rounded-full bg-emerald-500 absolute -top-1.5" />
-              <div><BalanzaItem h={68} w={68} colorClass="text-slate-700" /></div>
-              <span className="text-xs font-bold mt-1 scada-text-primary">Bascula #1</span>
-              <div className="w-3 h-3 rounded-full bg-emerald-500 absolute -bottom-1.5" />
-            </div>
+        <section className="flex-1 scada-card shadow-sm relative overflow-hidden">
+          <div className="h-full w-full">
+            <ReactFlow
+              defaultNodes={nodosIniciales}
+              fitView
+              minZoom={0.5}
+              maxZoom={1.8}
+              proOptions={{ hideAttribution: true }}
+            >
+              <Background gap={20} size={1} color="#cbd5e1" />
+              <Controls showInteractive={false} />
+            </ReactFlow>
           </div>
         </section>
 
