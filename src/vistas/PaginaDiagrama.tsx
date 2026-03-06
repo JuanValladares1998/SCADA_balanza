@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent, type MouseEvent, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type DragEvent, type MouseEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import ReactFlow, {
   addEdge,
@@ -23,8 +23,12 @@ import iconoUps from "../assets/imagenes/icono_ups.png";
 import iconoSensor from "../assets/imagenes/icono_sensor_IR.png";
 
 import BotonItem from "../components/layout/edicion-layout/BotonItem";
+import AristaOrtogonalEditable, {
+  type DatosAristaEditable,
+} from "../components/layout/edicion-layout/AristaOrtogonalEditable";
 import NodoPeriferico, {
   type DatosNodoPeriferico,
+  type TipoConexion,
   type TipoPeriferico,
 } from "../components/layout/edicion-layout/NodoPeriferico";
 
@@ -78,6 +82,10 @@ const tiposNodo = {
   periferico: NodoPeriferico,
 };
 
+const tiposArista = {
+  ortogonalEditable: AristaOrtogonalEditable,
+};
+
 const nodosIniciales: Node<DatosNodoPeriferico>[] = [
   {
     id: "nodo-prueba",
@@ -90,15 +98,79 @@ const nodosIniciales: Node<DatosNodoPeriferico>[] = [
   },
 ];
 
-const aristasIniciales: Edge[] = [];
+const aristasIniciales: Edge<DatosAristaEditable>[] = [];
+
+const coloresConexion: Record<TipoConexion, string> = {
+  energia: "#f59e0b",
+  senal: "#0ea5e9",
+};
+
+const etiquetasConexion: Record<TipoConexion, string> = {
+  energia: "Energia",
+  senal: "Senal",
+};
+
+function obtenerTipoConexionDesdeHandle(handleId?: string | null): TipoConexion | null {
+  if (!handleId) return null;
+  if (handleId.includes("energia")) return "energia";
+  if (handleId.includes("senal")) return "senal";
+  return null;
+}
 
 function PaginaDiagrama() {
   const contenedorReactFlowRef = useRef<HTMLDivElement | null>(null);
   const [instanciaReactFlow, setInstanciaReactFlow] = useState<ReactFlowInstance | null>(null);
   const [nodos, setNodos] = useState<Node<DatosNodoPeriferico>[]>(nodosIniciales);
-  const [aristas, setAristas] = useState<Edge[]>(aristasIniciales);
+  const [aristas, setAristas] = useState<Edge<DatosAristaEditable>[]>(aristasIniciales);
   const [nodoSeleccionado, setNodoSeleccionado] = useState<Node<DatosNodoPeriferico> | null>(null);
-  const [aristaSeleccionada, setAristaSeleccionada] = useState<Edge | null>(null);
+  const [aristaSeleccionada, setAristaSeleccionada] = useState<Edge<DatosAristaEditable> | null>(null);
+
+  const manejarCambiarOffsetArista = useCallback((
+    edgeId: string,
+    nuevoOffsetX: number,
+    nuevoOffsetY: number,
+  ) => {
+    setAristas((aristasActuales) =>
+      aristasActuales.map((arista) =>
+        arista.id === edgeId
+          ? {
+              ...arista,
+              data: {
+                ...arista.data,
+                offsetX: nuevoOffsetX,
+                offsetY: nuevoOffsetY,
+              },
+            } as Edge<DatosAristaEditable>
+          : arista,
+      ),
+    );
+
+    setAristaSeleccionada((aristaActual) =>
+      aristaActual?.id === edgeId
+        ? {
+            ...aristaActual,
+            data: {
+              ...aristaActual.data,
+              offsetX: nuevoOffsetX,
+              offsetY: nuevoOffsetY,
+            },
+          } as Edge<DatosAristaEditable>
+        : aristaActual,
+    );
+  }, []);
+
+  const aristasRender = useMemo(
+    () =>
+      aristas.map((arista) => ({
+        ...arista,
+        type: "ortogonalEditable",
+        data: {
+          ...arista.data,
+          onCambiarOffset: manejarCambiarOffsetArista,
+        },
+      })),
+    [aristas, manejarCambiarOffsetArista],
+  );
 
   const manejarInicioArrastre = (item: ItemDisponible) => (event: DragEvent<HTMLDivElement>) => {
     event.dataTransfer.setData(
@@ -154,7 +226,7 @@ function PaginaDiagrama() {
     setAristaSeleccionada(null);
   };
 
-  const manejarClickArista = (_event: MouseEvent, arista: Edge) => {
+  const manejarClickArista = (_event: MouseEvent, arista: Edge<DatosAristaEditable>) => {
     setAristaSeleccionada(arista);
     setNodoSeleccionado(null);
   };
@@ -179,15 +251,33 @@ function PaginaDiagrama() {
   };
 
   const manejarConectar = (conexion: Connection) => {
+    const tipoOrigen = obtenerTipoConexionDesdeHandle(conexion.sourceHandle);
+    const tipoDestino = obtenerTipoConexionDesdeHandle(conexion.targetHandle);
+
+    if (!tipoOrigen || !tipoDestino || tipoOrigen !== tipoDestino) {
+      return;
+    }
+
     setAristas((aristasActuales) =>
       addEdge(
         {
           ...conexion,
           id: `arista-${Date.now()}`,
-          type: "step",
+          type: "ortogonalEditable",
+          data: {
+            tipoConexion: tipoOrigen,
+            offsetX: 0,
+            offsetY: 0,
+          },
+          label: etiquetasConexion[tipoOrigen],
           style: {
-            stroke: "#64748b",
+            stroke: coloresConexion[tipoOrigen],
             strokeWidth: 3,
+          },
+          labelStyle: {
+            fill: coloresConexion[tipoOrigen],
+            fontSize: 11,
+            fontWeight: 600,
           },
         },
         aristasActuales,
@@ -382,8 +472,9 @@ function PaginaDiagrama() {
           >
             <ReactFlow
               nodes={nodos}
-              edges={aristas}
+              edges={aristasRender}
               nodeTypes={tiposNodo}
+              edgeTypes={tiposArista}
               onInit={setInstanciaReactFlow}
               onNodesChange={manejarCambioNodos}
               onEdgesChange={manejarCambioAristas}
@@ -391,14 +482,20 @@ function PaginaDiagrama() {
               onNodeClick={manejarClickNodo}
               onEdgeClick={manejarClickArista}
               onPaneClick={manejarClickPanel}
-              connectionLineType={ConnectionLineType.Step}
-              defaultEdgeOptions={{
-                type: "step",
-                style: {
-                  stroke: "#64748b",
-                  strokeWidth: 3,
-                },
+              isValidConnection={(conexion) => {
+                const tipoOrigen = obtenerTipoConexionDesdeHandle(conexion.sourceHandle);
+                const tipoDestino = obtenerTipoConexionDesdeHandle(conexion.targetHandle);
+
+                return Boolean(
+                  conexion.source &&
+                  conexion.target &&
+                  conexion.source !== conexion.target &&
+                  tipoOrigen &&
+                  tipoDestino &&
+                  tipoOrigen === tipoDestino,
+                );
               }}
+              connectionLineType={ConnectionLineType.Step}
               fitView
               minZoom={0.5}
               maxZoom={1.8}
@@ -457,6 +554,33 @@ function PaginaDiagrama() {
               <div className="text-[10px] scada-text-secondary">
                 ID: {nodoSeleccionado?.id ?? aristaSeleccionada?.id ?? "-"}
               </div>
+              {aristaSeleccionada ? (
+                <div
+                  className="mt-2 inline-flex items-center gap-2 rounded-full px-2 py-1 text-[10px] font-semibold"
+                  style={{
+                    backgroundColor: `${coloresConexion[
+                      (aristaSeleccionada.data?.tipoConexion as TipoConexion | undefined) ?? "senal"
+                    ]}22`,
+                    color:
+                      coloresConexion[
+                        (aristaSeleccionada.data?.tipoConexion as TipoConexion | undefined) ?? "senal"
+                      ],
+                  }}
+                >
+                  <span
+                    className="inline-block h-2 w-2 rounded-full"
+                    style={{
+                      backgroundColor:
+                        coloresConexion[
+                          (aristaSeleccionada.data?.tipoConexion as TipoConexion | undefined) ?? "senal"
+                        ],
+                    }}
+                  />
+                  {etiquetasConexion[
+                    (aristaSeleccionada.data?.tipoConexion as TipoConexion | undefined) ?? "senal"
+                  ]}
+                </div>
+              ) : null}
             </div>
 
             <label className="block">

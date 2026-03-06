@@ -14,6 +14,8 @@ export type TipoPeriferico =
   | "switch"
   | "ups";
 
+export type TipoConexion = "energia" | "senal";
+
 export type DatosNodoPeriferico = {
   nombre: string;
   tipoPeriferico: TipoPeriferico;
@@ -22,17 +24,17 @@ export type DatosNodoPeriferico = {
 function obtenerIcono(tipoPeriferico: TipoPeriferico) {
   switch (tipoPeriferico) {
     case "balanza":
-      return <img src={iconoBalanza} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
+      return <img src={iconoBalanza} alt="Switch" className="h-[92px] w-[92px] object-contain" />;
     case "camara":
-      return <img src={iconoCamara} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
+      return <img src={iconoCamara} alt="Switch" className="h-[92px] w-[92px] object-contain" />;
     case "letrero-led":
-      return <img src={iconoLetrero} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
+      return <img src={iconoLetrero} alt="Switch" className="h-[92px] w-[92px] object-contain" />;
     case "sensor":
-      return <img src={iconoSensor} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
+      return <img src={iconoSensor} alt="Switch" className="h-[92px] w-[92px] object-contain" />;
     case "switch":
-      return <img src={iconoSwitch} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
+      return <img src={iconoSwitch} alt="Switch" className="h-[92px] w-[92px] object-contain" />;
     case "ups":
-      return <img src={iconoUps} alt="Switch" className="h-[34px] w-[34px] object-contain" />;
+      return <img src={iconoUps} alt="Switch" className="h-[92px] w-[92px] object-contain" />;
     default:
       return null;
   }
@@ -41,26 +43,44 @@ function obtenerIcono(tipoPeriferico: TipoPeriferico) {
 function NodoPeriferico({ data, selected }: NodeProps<DatosNodoPeriferico>) {
   return (
     <div
-      className={`w-20 h-20 scada-card flex flex-col items-center justify-center gap-1 text-center px-2 ${selected ? "ring-2 ring-emerald-400" : ""
+      className={`w-32 h-32 scada-card flex flex-col items-center justify-center gap-1 text-center px-2 ${selected ? "ring-2 ring-emerald-400" : ""
         }`}
     >
       <Handle
-        id="entrada"
+        id="entrada-energia"
         type="target"
         position={Position.Left}
-        className="!w-4 !h-4 !flex !items-center !justify-center !border-2 !border-slate-500 !bg-slate-100 !rounded-full"
-        title="entrada"
+        className="!top-[28px] !w-3 !h-3 !border-2 !border-amber-700 !bg-amber-400 !rounded-full"
+        title="Entrada de energia"
       >
-        <i className="ph-fill ph-caret-circle-right text-[10px] text-slate-600 pointer-events-none"></i>
+        <span className="sr-only">Entrada de energia</span>
       </Handle>
       <Handle
-        id="salida"
+        id="entrada-senal"
+        type="target"
+        position={Position.Left}
+        className="!top-[52px] !w-3 !h-3 !border-2 !border-sky-700 !bg-sky-400 !rounded-full"
+        title="Entrada de senal"
+      >
+        <span className="sr-only">Entrada de senal</span>
+      </Handle>
+      <Handle
+        id="salida-energia"
         type="source"
         position={Position.Right}
-        className="!w-4 !h-4 !flex !items-center !justify-center !border-2 !border-slate-500 !bg-slate-100 !rounded-full"
-        title="entrada"
+        className="!top-[28px] !w-3 !h-3 !border-2 !border-amber-700 !bg-amber-400 !rounded-full"
+        title="Salida de energia"
       >
-        <i className="ph-fill ph-caret-circle-right text-[10px] text-slate-600 pointer-events-none"></i>
+        <span className="sr-only">Salida de energia</span>
+      </Handle>
+      <Handle
+        id="salida-senal"
+        type="source"
+        position={Position.Right}
+        className="!top-[52px] !w-3 !h-3 !border-2 !border-sky-700 !bg-sky-400 !rounded-full"
+        title="Salida de senal"
+      >
+        <span className="sr-only">Salida de senal</span>
       </Handle>
       <div className="flex items-center justify-center">{obtenerIcono(data.tipoPeriferico)}</div>
       <div className="text-[11px] font-semibold scada-text-primary leading-tight">{data.nombre}</div>
