@@ -1,8 +1,14 @@
-function BalanzaItem() {
+interface ItemProps {
+  h: number;
+  w: number;
+}
+
+function BalanzaItem({ h, w }: ItemProps) {
   return (
     <svg
-      className="h-42 w-42"
-      viewBox="0 0 64 64"
+      width={w}
+      height={h}
+      viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
