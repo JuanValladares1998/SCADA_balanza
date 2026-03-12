@@ -3,6 +3,7 @@ import PaginaDashboard from "./App";
 import PaginaAlertas from "./vistas/PaginaAlertas";
 import PaginaDiagrama from "./vistas/PaginaDiagrama";
 import PaginaNivel1 from "./vistas/PaginaNivel1";
+import PaginaAlmacenes from "./vistas/PaginaAlmacenes";
 
 export const enrutador = createBrowserRouter([
   {
@@ -24,5 +25,9 @@ export const enrutador = createBrowserRouter([
   {
     path: "/diagrama-editar",
     element: <PaginaDiagrama />,
+  },
+  {
+    path: "/almacenes",
+    element: <PaginaAlmacenes />,
   },
 ]);
