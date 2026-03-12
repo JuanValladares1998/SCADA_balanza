@@ -20,7 +20,7 @@ const ModalDetalle: React.FC<ModalDetalleProps> = ({ title, data, visible, onClo
                 {/* Botón de cerrar (Icono X) */}
                 <button
                     onClick={onClose}
-                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors text-2xl font-bold leading-none p-2"
+                    className="absolute cursor-pointer top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors text-2xl font-bold leading-none p-2"
                     aria-label="Cerrar"
                 >
                     &times;

@@ -46,7 +46,7 @@ const PaginaAlmacenes: React.FC = () => {
                 layoutsData.push({
                     ide_layout: layoutsData.length + 1,
                     ide_almacen: almacen.ide_almacen,
-                    des_nombre: `Layout ${j} - ${almacen.des_nombre}`,
+                    des_nombre: `Layout ${j}`,
                     des_descripcion: `Plano de distribución fase ${j}`,
                     num_ancho_lienzo: 1920,
                     num_alto_lienzo: 1080
@@ -63,7 +63,7 @@ const PaginaAlmacenes: React.FC = () => {
                     ide_bloque: bloquesData.length + 1,
                     ide_layout: layout.ide_layout,
                     ide_tipo_componente: k, // Tipos 1, 2 y 3
-                    des_etiqueta: `${tipos[k - 1]} ${k} (L${layout.ide_layout})`,
+                    des_etiqueta: `${tipos[k - 1]} ${k}`,
                     num_pos_x: 100 * k,
                     num_pos_y: 150 * k
                 });
@@ -281,9 +281,9 @@ const PaginaAlmacenes: React.FC = () => {
                                     <i className="ph ph-eye h-8 w-8"></i>
                                 </button>
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">
+                            {/* <p className="text-sm text-gray-600 mt-1">
                                 Pos: {b.num_pos_x},{b.num_pos_y}
-                            </p>
+                            </p> */}
                         </div>
                     ))}
                     <Pagination

@@ -15,7 +15,7 @@ const Modal: React.FC<ModalProps> = ({ visible, title, onClose, children }) => {
             <div className="relative bg-white p-6 rounded-lg w-full max-w-lg shadow-2xl">
                 <button
                     onClick={onClose}
-                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors text-2xl font-bold leading-none p-2"
+                    className="absolute cursor-pointer top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors text-2xl font-bold leading-none p-2"
                     aria-label="Cerrar"
                 >
                     &times;
