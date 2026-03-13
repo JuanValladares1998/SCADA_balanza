@@ -1,7 +1,7 @@
 /* ============================================================
    CREACIÓN COMPLETA DE BD: automatizacion_db (SQL Server)
    Modelo SCADA Layout Editor - ARQUITECTURA DE PLANTILLAS
-   ** VERSIÓN OPTIMIZADA (INT, VARCHAR) + RENOMBRAMIENTO A cat_ **
+   ** VERSIÓN OPTIMIZADA (INT, VARCHAR) + TRADUCCIÓN A ESPAÑOL **
    ============================================================ */
 
 IF DB_ID(N'automatizacion_db') IS NULL
@@ -18,7 +18,7 @@ GO
 /* ============================================================
    1) LIMPIEZA (DROP)
    ============================================================ */
-IF OBJECT_ID('dbo.rel_almacen_bloque_tag', 'U') IS NOT NULL DROP TABLE dbo.rel_almacen_bloque_tag;
+IF OBJECT_ID('dbo.rel_almacen_bloque_variable', 'U') IS NOT NULL DROP TABLE dbo.rel_almacen_bloque_variable;
 IF OBJECT_ID('dbo.rel_almacen_bloque_equipo', 'U') IS NOT NULL DROP TABLE dbo.rel_almacen_bloque_equipo;
 IF OBJECT_ID('dbo.rel_almacen_layout', 'U') IS NOT NULL DROP TABLE dbo.rel_almacen_layout;
 
@@ -26,7 +26,7 @@ IF OBJECT_ID('dbo.cat_bloque', 'U') IS NOT NULL DROP TABLE dbo.cat_bloque;
 IF OBJECT_ID('dbo.cat_equipo', 'U') IS NOT NULL DROP TABLE dbo.cat_equipo;
 IF OBJECT_ID('dbo.cat_layout', 'U') IS NOT NULL DROP TABLE dbo.cat_layout;
 
-IF OBJECT_ID('dbo.cat_tag', 'U') IS NOT NULL DROP TABLE dbo.cat_tag;
+IF OBJECT_ID('dbo.cat_variable', 'U') IS NOT NULL DROP TABLE dbo.cat_variable;
 IF OBJECT_ID('dbo.cat_tipo_componente', 'U') IS NOT NULL DROP TABLE dbo.cat_tipo_componente;
 IF OBJECT_ID('dbo.cat_almacen', 'U') IS NOT NULL DROP TABLE dbo.cat_almacen;
 GO
@@ -35,6 +35,7 @@ GO
    2) TABLAS - CATÁLOGOS BASE
    ============================================================ */
 
+/* 🏢 MUNDO FÍSICO: El edificio de ladrillos, la ubicación geográfica. */
 CREATE TABLE dbo.cat_almacen (
     ide_almacen           INT IDENTITY(1,1) NOT NULL,
     des_nombre            NVARCHAR(100) NOT NULL,
@@ -49,6 +50,7 @@ CREATE TABLE dbo.cat_almacen (
 );
 GO
 
+/* 💻 MUNDO SOFTWARE: Plantillas base de dibujo (SVG/JSON) para renderizar elementos visuales. */
 CREATE TABLE dbo.cat_tipo_componente (
     ide_tipo_componente    INT IDENTITY(1,1) NOT NULL,
     cod_tipo_componente    VARCHAR(50) NULL,
@@ -70,29 +72,31 @@ CREATE TABLE dbo.cat_tipo_componente (
 );
 GO
 
-CREATE TABLE dbo.cat_tag (
-    ide_tag               INT IDENTITY(1,1) NOT NULL,
-    cod_tag               VARCHAR(80) NOT NULL,
-    des_nombre            NVARCHAR(120) NULL,
+/* ⚙️ MUNDO FÍSICO: La señal/dirección de memoria real en el PLC físico (Ej. Sensor de Temperatura). */
+CREATE TABLE dbo.cat_variable (
+    ide_variable          INT IDENTITY(1,1) NOT NULL,
+    cod_variable          VARCHAR(80) NOT NULL,
+    des_nombre            NVARCHAR(100) NULL,
     des_tipo_dato         VARCHAR(20) NOT NULL,
     des_fuente            VARCHAR(30) NULL,
     des_direccion         VARCHAR(255) NULL,
-    jsn_metadata          NVARCHAR(MAX) NOT NULL CONSTRAINT df_cat_tag_meta DEFAULT (N'{}'),
+    jsn_metadata          NVARCHAR(MAX) NOT NULL CONSTRAINT df_cat_var_meta DEFAULT (N'{}'),
     
-    est_registro          BIT NOT NULL CONSTRAINT df_cat_tag_est DEFAULT 1,
-    fec_registro          DATETIME2(0) NOT NULL CONSTRAINT df_cat_tag_fec_reg DEFAULT SYSDATETIME(),
+    est_registro          BIT NOT NULL CONSTRAINT df_cat_var_est DEFAULT 1,
+    fec_registro          DATETIME2(0) NOT NULL CONSTRAINT df_cat_var_fec_reg DEFAULT SYSDATETIME(),
     usu_registro          INT NOT NULL,
     
-    CONSTRAINT pk_cat_tag PRIMARY KEY CLUSTERED (ide_tag),
-    CONSTRAINT uq_cat_tag_cod UNIQUE (cod_tag),
-    CONSTRAINT ck_cat_tag_jsn_metadata CHECK (ISJSON(jsn_metadata) = 1)
+    CONSTRAINT pk_cat_variable PRIMARY KEY CLUSTERED (ide_variable),
+    CONSTRAINT uq_cat_var_cod UNIQUE (cod_variable),
+    CONSTRAINT ck_cat_var_jsn_metadata CHECK (ISJSON(jsn_metadata) = 1)
 );
 GO
 
 /* ============================================================
-   3) TABLAS - PLANTILLAS Y EQUIPOS (AHORA CATÁLOGOS)
+   3) TABLAS - PLANTILLAS Y EQUIPOS
    ============================================================ */
 
+/* ⚙️ MUNDO FÍSICO: La máquina real de metal instalada en un almacén. */
 CREATE TABLE dbo.cat_equipo (
     ide_equipo             INT IDENTITY(1,1) NOT NULL,
     ide_almacen            INT NOT NULL,
@@ -114,6 +118,7 @@ CREATE TABLE dbo.cat_equipo (
 );
 GO
 
+/* 💻 MUNDO SOFTWARE: El lienzo o pantalla general del HMI/SCADA. */
 CREATE TABLE dbo.cat_layout (
     ide_layout            INT IDENTITY(1,1) NOT NULL,
     des_nombre            NVARCHAR(100) NOT NULL,
@@ -131,6 +136,7 @@ CREATE TABLE dbo.cat_layout (
 );
 GO
 
+/* 💻 MUNDO SOFTWARE: Dibujos o figuras genéricas colocadas dentro de un Layout. */
 CREATE TABLE dbo.cat_bloque (
     ide_bloque             INT IDENTITY(1,1) NOT NULL,
     ide_layout             INT NOT NULL,            
@@ -163,9 +169,10 @@ CREATE TABLE dbo.cat_bloque (
 GO
 
 /* ============================================================
-   4) TABLAS - MAPEOS CONTEXTUALES
+   4) TABLAS - MAPEOS CONTEXTUALES (EL PUENTE)
    ============================================================ */
 
+/* 🌉 PUENTE: Indica qué pantallas (layouts) están habilitadas para verse en un almacén. */
 CREATE TABLE dbo.rel_almacen_layout (
     ide_almacen_layout    INT IDENTITY(1,1) NOT NULL,
     ide_almacen           INT NOT NULL,
@@ -183,6 +190,7 @@ CREATE TABLE dbo.rel_almacen_layout (
 );
 GO
 
+/* 🌉 PUENTE: "En el almacén X, el dibujo Y representa la máquina física Z". */
 CREATE TABLE dbo.rel_almacen_bloque_equipo (
     ide_almacen_bloque_equipo INT IDENTITY(1,1) NOT NULL,
     ide_almacen               INT NOT NULL,
@@ -201,23 +209,24 @@ CREATE TABLE dbo.rel_almacen_bloque_equipo (
 );
 GO
 
-CREATE TABLE dbo.rel_almacen_bloque_tag (
-    ide_almacen_bloque_tag INT IDENTITY(1,1) NOT NULL,
-    ide_almacen            INT NOT NULL,
-    ide_bloque             INT NOT NULL,
-    ide_tag                INT NOT NULL,
-    des_rol                VARCHAR(40) NOT NULL, 
-    jsn_config             NVARCHAR(MAX) NOT NULL CONSTRAINT df_rel_abt_conf DEFAULT (N'{}'),
+/* 🌉 PUENTE: "En el almacén X, el dibujo Y lee los datos de la variable PLC Z". */
+CREATE TABLE dbo.rel_almacen_bloque_variable (
+    ide_almacen_bloque_variable INT IDENTITY(1,1) NOT NULL,
+    ide_almacen                 INT NOT NULL,
+    ide_bloque                  INT NOT NULL,
+    ide_variable                INT NOT NULL,
+    des_rol                     VARCHAR(40) NOT NULL, 
+    jsn_config                  NVARCHAR(MAX) NOT NULL CONSTRAINT df_rel_abv_conf DEFAULT (N'{}'),
     
-    est_registro          BIT NOT NULL CONSTRAINT df_rel_abt_est DEFAULT 1,
-    fec_registro          DATETIME2(0) NOT NULL CONSTRAINT df_rel_abt_fec_reg DEFAULT SYSDATETIME(),
+    est_registro          BIT NOT NULL CONSTRAINT df_rel_abv_est DEFAULT 1,
+    fec_registro          DATETIME2(0) NOT NULL CONSTRAINT df_rel_abv_fec_reg DEFAULT SYSDATETIME(),
     usu_registro          INT NOT NULL,
     
-    CONSTRAINT pk_rel_almacen_bloque_tag PRIMARY KEY CLUSTERED (ide_almacen_bloque_tag),
-    CONSTRAINT fk_rel_abt_alm FOREIGN KEY (ide_almacen) REFERENCES dbo.cat_almacen(ide_almacen),
-    CONSTRAINT fk_rel_abt_blo FOREIGN KEY (ide_bloque) REFERENCES dbo.cat_bloque(ide_bloque) ON DELETE CASCADE,
-    CONSTRAINT fk_rel_abt_tag FOREIGN KEY (ide_tag) REFERENCES dbo.cat_tag(ide_tag),
-    CONSTRAINT uq_rel_abt_unico UNIQUE (ide_almacen, ide_bloque, ide_tag, des_rol),
-    CONSTRAINT ck_rel_abt_jsn CHECK (ISJSON(jsn_config) = 1)
+    CONSTRAINT pk_rel_almacen_bloque_variable PRIMARY KEY CLUSTERED (ide_almacen_bloque_variable),
+    CONSTRAINT fk_rel_abv_alm FOREIGN KEY (ide_almacen) REFERENCES dbo.cat_almacen(ide_almacen),
+    CONSTRAINT fk_rel_abv_blo FOREIGN KEY (ide_bloque) REFERENCES dbo.cat_bloque(ide_bloque) ON DELETE CASCADE,
+    CONSTRAINT fk_rel_abv_var FOREIGN KEY (ide_variable) REFERENCES dbo.cat_variable(ide_variable),
+    CONSTRAINT uq_rel_abv_unico UNIQUE (ide_almacen, ide_bloque, ide_variable, des_rol),
+    CONSTRAINT ck_rel_abv_jsn CHECK (ISJSON(jsn_config) = 1)
 );
 GO

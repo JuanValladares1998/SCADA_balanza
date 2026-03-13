@@ -18,7 +18,9 @@ const FormLayout: React.FC<FormLayoutProps> = ({ onSubmit, onCancel, initialValu
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type, checked } = e.target;
+        const target = e.target as HTMLInputElement;
+        const { name, value, type } = target;
+        const checked = target.checked;
         setValues((v) => ({
             ...v,
             [name]: type === "checkbox" ? checked : value
