@@ -23,6 +23,65 @@ const navigation = [
     ),
   },
   {
+    to: "/balanza",
+    label: "Balanza",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M6 7h12" />
+        <path d="M5 7l1 14h12l1-14" />
+        <path d="M9 7v-3h6v3" />
+        <path d="M8 14h8" />
+      </svg>
+    ),
+  },
+  {
+    to: "/ups",
+    label: "UPS",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M5 3h14v18H5z" />
+        <path d="M9 7h6" />
+        <path d="M9 11h6" />
+        <path d="M9 15h4" />
+      </svg>
+    ),
+  },
+  {
+    to: "/switch",
+    label: "Switch",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M4 6h16v4H4z" />
+        <path d="M4 14h16v4H4z" />
+        <path d="M7 10v4" />
+        <path d="M17 10v4" />
+      </svg>
+    ),
+  },
+  {
+    to: "/sensores-ir",
+    label: "Sensores IR",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M3 12h18" />
+        <path d="M9 5v14" />
+        <path d="M15 5v14" />
+        <path d="M12 5v14" />
+      </svg>
+    ),
+  },
+  {
+    to: "/camara-lpr",
+    label: "Cámara LPR",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M5 7h14v11H5z" />
+        <path d="M9 12h6" />
+        <path d="M12 10v4" />
+      </svg>
+    ),
+  },
+  {
     to: "/alertas",
     label: "Alertas",
     icon: (
