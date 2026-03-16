@@ -1,11 +1,17 @@
+import { Link } from "react-router-dom";
+
 type PropiedadesTarjetaVehiculoChofer = {
   placa: string;
   chofer: string;
+  camaraId: string;
 };
 
-function TarjetaVehiculoChofer({ placa, chofer }: PropiedadesTarjetaVehiculoChofer) {
+function TarjetaVehiculoChofer({ placa, chofer, camaraId }: PropiedadesTarjetaVehiculoChofer) {
   return (
-    <article className="col-span-3 scada-card shadow-sm p-4">
+    <Link
+      to={`/camara-lpr?camara=${camaraId}`}
+      className="col-span-3 scada-card shadow-sm p-4 block transition hover:-translate-y-0.5 hover:shadow-md"
+    >
       <h2 className="text-sm font-semibold scada-title p-2 rounded mb-4">Datos del Vehiculo y Chofer</h2>
 
       <div className="flex flex-col gap-4">
@@ -23,7 +29,7 @@ function TarjetaVehiculoChofer({ placa, chofer }: PropiedadesTarjetaVehiculoChof
           </div>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 

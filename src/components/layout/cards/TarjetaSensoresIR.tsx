@@ -1,7 +1,9 @@
 import type { Estado } from "../../../types/Estado";
+import { Link } from "react-router-dom";
 
 type SensorInfrarrojo = {
   id: number;
+  routeId: string;
   nombre: string;
   estado: Estado;
 };
@@ -21,9 +23,10 @@ function TarjetaSensoresIR({ sensores }: PropiedadesTarjetaSensoresIR) {
       <div className="flex-1 grid grid-cols-2 gap-2 text-xs">
         {
           sensores.map((sensor) => (
-            <div
+            <Link
               key={sensor.id}
-              className={`scada-soft-box p-2 ${sensor.estado === "ok" ? "scada-soft-ok" : sensor.estado === "alerta" ? "scada-soft-alerta" : "scada-soft-error"}`}
+              to={`/sensores-ir?sensor=${sensor.routeId}`}
+              className={`scada-soft-box p-2 transition hover:-translate-y-0.5 hover:shadow-sm ${sensor.estado === "ok" ? "scada-soft-ok" : sensor.estado === "alerta" ? "scada-soft-alerta" : "scada-soft-error"}`}
             >
               <div className="scada-text-secondary font-bold">{sensor.nombre}</div>
               <div
@@ -31,7 +34,7 @@ function TarjetaSensoresIR({ sensores }: PropiedadesTarjetaSensoresIR) {
               >
                 {sensor.estado}
               </div>
-            </div>
+            </Link>
           ))
         }
       </div>

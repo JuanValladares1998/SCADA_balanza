@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { Estado } from "../types/Estado";
 import PerifericoList, { PerifericoItem } from "../components/PerifericoList";
 
@@ -27,18 +28,18 @@ const mockBalanzas = [
     codigoError: "",
     temperaturaGabinete: 32.1,
   },
-  {
-    id: "bal-3",
-    nombre: "Balanza secundaria",
-    unidad: "kg",
-    pesoBruto: 0,
-    esEstable: false,
-    estaEnCero: false,
-    sobrecargaerrora: false,
-    redPDXSaludable: false,
-    codigoError: "SIN CONEXION",
-    temperaturaGabinete: 0,
-  },
+  // {
+  //   id: "bal-3",
+  //   nombre: "Balanza secundaria",
+  //   unidad: "kg",
+  //   pesoBruto: 0,
+  //   esEstable: false,
+  //   estaEnCero: false,
+  //   sobrecargaerrora: false,
+  //   redPDXSaludable: false,
+  //   codigoError: "SIN CONEXION",
+  //   temperaturaGabinete: 0,
+  // },
 ];
 
 function classNames(...classes: Array<string | false | null | undefined>) {
@@ -46,7 +47,28 @@ function classNames(...classes: Array<string | false | null | undefined>) {
 }
 
 function PaginaBalanza() {
-  const [selectedBalanzaId, setSelectedBalanzaId] = useState<string | number>(mockBalanzas[0].id);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const balanzaIdDesdeUrl = searchParams.get("balanza");
+  const balanzaInicial =
+    mockBalanzas.find((balanza) => balanza.id === balanzaIdDesdeUrl)?.id ?? mockBalanzas[0].id;
+
+  const [selectedBalanzaId, setSelectedBalanzaId] = useState<string | number>(balanzaInicial);
+
+  useEffect(() => {
+    if (!balanzaIdDesdeUrl) {
+      setSelectedBalanzaId(mockBalanzas[0].id);
+      return;
+    }
+
+    const balanzaExiste = mockBalanzas.some((balanza) => balanza.id === balanzaIdDesdeUrl);
+    setSelectedBalanzaId(balanzaExiste ? balanzaIdDesdeUrl : mockBalanzas[0].id);
+  }, [balanzaIdDesdeUrl]);
+
+  const handleSelectBalanza = (id: string | number) => {
+    const balanzaId = String(id);
+    setSelectedBalanzaId(balanzaId);
+    setSearchParams({ balanza: balanzaId });
+  };
 
   const balanzasItems: PerifericoItem[] = mockBalanzas.map((bal) => {
     let estado: Estado = "ok";
@@ -88,7 +110,7 @@ function PaginaBalanza() {
           title="Balanzas"
           items={balanzasItems}
           selectedId={selectedBalanzaId}
-          onSelect={setSelectedBalanzaId}
+          onSelect={handleSelectBalanza}
         />
 
         <div className="grid grid-cols-1 gap-4">

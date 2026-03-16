@@ -40,13 +40,13 @@ function PaginaDashboard() {
             { id: 3, estado: "ok", titulo: "Alerta 3", descripcion: "Calibracion Exitosa", hora: "08:10 AM" },
           ]}
         />
-        <TarjetaVehiculoChofer placa="A5T-837" chofer="Pedro Sanchez" />
+        <TarjetaVehiculoChofer placa="A5T-837" chofer="Pedro Sanchez" camaraId="cam-1" />
         <TarjetaSensoresIR
           sensores={[
-            { id: 1, nombre: "IR Entrada", estado: "ok" },
-            { id: 2, nombre: "IR Salida", estado: "alerta" },
-            { id: 3, nombre: "IR Lateral Izq.", estado: "ok" },
-            { id: 4, nombre: "IR Lateral Der.", estado: "error" },
+            { id: 1, routeId: "IR_ENTRADA", nombre: "IR Entrada", estado: "ok" },
+            { id: 2, routeId: "IR_SALIDA", nombre: "IR Salida", estado: "alerta" },
+            { id: 3, routeId: "IR_LATERAL_IZQ", nombre: "IR Lateral Izq.", estado: "ok" },
+            { id: 4, routeId: "IR_LATERAL_DER", nombre: "IR Lateral Der.", estado: "error" },
           ]}
         />
         <TarjetaPantallaLED tituloPrincipal="Ingresar a pesaje" subtitulo="espacio libre" />

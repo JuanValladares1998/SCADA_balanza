@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Sensor, EstadoAlineamiento } from "../types/sensores";
 import type { Estado } from "../types/Estado";
 import PerifericoList, { PerifericoItem } from "../components/PerifericoList";
@@ -33,7 +34,7 @@ const mockSensores: Sensor[] = [
     tapaActiva: true,
     voltaje: 21.5,
     intensidadSenal: 28,
-    estadoAlineamiento: EstadoAlineamiento.DESALINEADO,
+    estadoAlineamiento: EstadoAlineamiento.OPTIMO,
     cuentaActivacion: 82,
     ratioFalsaerrora: 2.2,
   },
@@ -44,7 +45,7 @@ const mockSensores: Sensor[] = [
     tapaActiva: false,
     voltaje: 24.6,
     intensidadSenal: 67,
-    estadoAlineamiento: EstadoAlineamiento.OPTIMO,
+    estadoAlineamiento: EstadoAlineamiento.DESALINEADO,
     cuentaActivacion: 1284,
     ratioFalsaerrora: 0.6,
   },
@@ -74,7 +75,28 @@ function SignalBars({ nivel }: { nivel: number }) {
 }
 
 function PaginaSensoresIR() {
-  const [selectedId, setSelectedId] = useState<string | number>(mockSensores[0].id);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sensorIdDesdeUrl = searchParams.get("sensor");
+  const sensorInicial =
+    mockSensores.find((sensor) => sensor.id === sensorIdDesdeUrl)?.id ?? mockSensores[0].id;
+
+  const [selectedId, setSelectedId] = useState<string | number>(sensorInicial);
+
+  useEffect(() => {
+    if (!sensorIdDesdeUrl) {
+      setSelectedId(mockSensores[0].id);
+      return;
+    }
+
+    const sensorExiste = mockSensores.some((sensor) => sensor.id === sensorIdDesdeUrl);
+    setSelectedId(sensorExiste ? sensorIdDesdeUrl : mockSensores[0].id);
+  }, [sensorIdDesdeUrl]);
+
+  const handleSelectSensor = (id: string | number) => {
+    const sensorId = String(id);
+    setSelectedId(sensorId);
+    setSearchParams({ sensor: sensorId });
+  };
   const selectedSensor = mockSensores.find((s) => s.id === selectedId) ?? mockSensores[0];
 
   const totalActivaciones = useMemo(
@@ -85,7 +107,8 @@ function PaginaSensoresIR() {
   const sensoresItems: PerifericoItem[] = mockSensores.map((sensor) => {
     const estado: Estado = sensor.interrumpido
       ? "error"
-      : sensor.estadoAlineamiento === EstadoAlineamiento.DESALINEADO
+      : sensor.estadoAlineamiento === EstadoAlineamiento.DESALINEADO ||
+        sensor.estadoAlineamiento === EstadoAlineamiento.ATENUADO
       ? "alerta"
       : "ok";
     return { id: sensor.id, nombre: sensor.etiqueta, estado };
@@ -115,7 +138,7 @@ function PaginaSensoresIR() {
           title="Sensores"
           items={sensoresItems}
           selectedId={selectedId}
-          onSelect={setSelectedId}
+          onSelect={handleSelectSensor}
         />
 
         <div className="scada-card p-4">

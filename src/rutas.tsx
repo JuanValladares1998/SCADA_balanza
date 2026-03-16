@@ -4,6 +4,7 @@ import PaginaDashboard from "./App";
 import PaginaAlertas from "./vistas/PaginaAlertas";
 import PaginaBalanza from "./vistas/PaginaBalanza";
 import PaginaCamaraLPR from "./vistas/PaginaCamaraLPR";
+import PaginaCartelLED from "./vistas/PaginaCartelLED";
 import PaginaDiagrama from "./vistas/PaginaDiagrama";
 import PaginaNivel1 from "./vistas/PaginaNivel1";
 import PaginaSensoresIR from "./vistas/PaginaSensoresIR";
@@ -47,6 +48,10 @@ export const enrutador = createBrowserRouter([
       {
         path: "camara-lpr",
         element: <PaginaCamaraLPR />,
+      },
+      {
+        path: "cartel-led",
+        element: <PaginaCartelLED />,
       },
       {
         path: "alertas",

@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { CamaraEstado, CamaraModo, LprEvento } from "../types/camara";
 import type { Estado } from "../types/Estado";
 import PerifericoList, { PerifericoItem } from "../components/PerifericoList";
@@ -79,7 +80,28 @@ function IconoModo({ modo }: { modo: CamaraModo }) {
 }
 
 function PaginaCamaraLPR() {
-  const [selectedId, setSelectedId] = useState<string | number>(mockCamaras[0].id);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const camaraIdDesdeUrl = searchParams.get("camara");
+  const camaraInicial =
+    mockCamaras.find((camara) => camara.id === camaraIdDesdeUrl)?.id ?? mockCamaras[0].id;
+
+  const [selectedId, setSelectedId] = useState<string | number>(camaraInicial);
+
+  useEffect(() => {
+    if (!camaraIdDesdeUrl) {
+      setSelectedId(mockCamaras[0].id);
+      return;
+    }
+
+    const camaraExiste = mockCamaras.some((camara) => camara.id === camaraIdDesdeUrl);
+    setSelectedId(camaraExiste ? camaraIdDesdeUrl : mockCamaras[0].id);
+  }, [camaraIdDesdeUrl]);
+
+  const handleSelectCamara = (id: string | number) => {
+    const camaraId = String(id);
+    setSelectedId(camaraId);
+    setSearchParams({ camara: camaraId });
+  };
   const selectedCamara = mockCamaras.find((c) => c.id === selectedId) ?? mockCamaras[0];
 
   const confianza = selectedCamara.datos.ultimoEvento?.fiabilidad ?? 0;
@@ -118,7 +140,7 @@ function PaginaCamaraLPR() {
           title="Cámaras"
           items={camarasItems}
           selectedId={selectedId}
-          onSelect={setSelectedId}
+          onSelect={handleSelectCamara}
         />
 
         <div className="scada-card p-4">

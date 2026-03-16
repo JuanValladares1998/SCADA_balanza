@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 type PropiedadesTarjetaPantallaLED = {
   tituloPrincipal: string;
   subtitulo?: string;
@@ -6,7 +8,7 @@ type PropiedadesTarjetaPantallaLED = {
 
 function TarjetaPantallaLED({ tituloPrincipal, subtitulo }: PropiedadesTarjetaPantallaLED) {
   return (
-    <article className="col-span-3 scada-card shadow-sm p-4 flex flex-col">
+    <Link to="/cartel-led?cartel=led-1" className="col-span-3 scada-card shadow-sm p-4 flex flex-col transition hover:-translate-y-0.5 hover:shadow-md">
       <h2 className="text-sm font-semibold scada-title p-2 rounded mb-4">Visualizacion LED Externa</h2>
       <div className="flex-1 flex items-center justify-center p-2">
         <div className="flex h-full w-full flex-col items-center justify-center">
@@ -18,7 +20,7 @@ function TarjetaPantallaLED({ tituloPrincipal, subtitulo }: PropiedadesTarjetaPa
           <div className="w-16 h-2 bg-slate-600 rounded-full" />
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
