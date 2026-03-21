@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+
+const SIDEBAR_COLLAPSED_STORAGE_KEY = "scada-sidebar-collapsed";
 
 const navigation = [
   {
@@ -130,7 +132,17 @@ const navigation = [
 ];
 
 const SidebarLayout = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "true";
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(collapsed));
+  }, [collapsed]);
 
   return (
     <div className="min-h-screen flex bg-slate-50">
