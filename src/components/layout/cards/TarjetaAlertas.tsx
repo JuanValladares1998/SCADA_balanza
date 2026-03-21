@@ -12,6 +12,7 @@ type AlertaSistema = {
 
 type PropiedadesTarjetaAlertas = {
   alertas: AlertaSistema[];
+  titulo?: string;
 };
 
 function formatearFechaHora(valor?: string) {
@@ -28,7 +29,7 @@ function formatearFechaHora(valor?: string) {
   return fecha.toLocaleString();
 }
 
-function TarjetaAlertas({ alertas }: PropiedadesTarjetaAlertas) {
+function TarjetaAlertas({ alertas, titulo = "Alertas del Sistema" }: PropiedadesTarjetaAlertas) {
 
   const ahora = new Date();
   const unaHoraDespues = new Date(ahora.getTime() + 60 * 60 * 1000); // Sumamos 1 hora en ms
@@ -65,9 +66,9 @@ function TarjetaAlertas({ alertas }: PropiedadesTarjetaAlertas) {
   };
 
   return (
-    <article className="col-span-3 scada-card shadow-sm p-4 flex flex-col overflow-hidden relative">
+    <article className="scada-card shadow-sm p-4 flex h-full min-h-0 flex-col overflow-hidden relative min-w-0">
       <h2 className="text-sm font-semibold scada-title p-2 rounded mb-3">
-        Alertas del Sistema {rangoAplicado ? `(${alertasFiltradas.length})` : null}
+        {titulo} {rangoAplicado ? `(${alertasFiltradas.length})` : null}
       </h2>
 
       <details className="mb-3 relative z-20">

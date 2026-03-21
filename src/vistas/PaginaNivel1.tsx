@@ -1,54 +1,156 @@
 import TarjetaAlertas from "../components/layout/cards/TarjetaAlertas";
-import TarjetaContenedorVertical from "../components/layout/cards/TarjetaContenedorVertical";
-import TarjetaMonitoreoGeneral from "../components/layout/cards/TarjetaMonitoreoGeneral";
-import BalanzaItem from "../components/layout/edicion-layout/item-perifericos/BalanzaItem";
-import CamaraItem from "../components/layout/edicion-layout/item-perifericos/CamaraItem";
-import SensorItem from "../components/layout/edicion-layout/item-perifericos/SensorItem";
-import SwitchItem from "../components/layout/edicion-layout/item-perifericos/SwitchItem";
-import UpsItem from "../components/layout/edicion-layout/item-perifericos/UpsItem";
+import TarjetaGraficoAlertas from "../components/layout/cards/TarjetaGraficoAlertas";
+import TarjetaResumenAlertas from "../components/layout/cards/TarjetaResumenAlertas";
 import type { Estado } from "../types/Estado";
 
-type ElementoMonitoreo = {
-    nombre: string;
-    valor: string | number;
+type AlertaSistema = {
+    id: number;
     estado: Estado;
+    titulo: string;
+    descripcion: string;
+    hora: string;
+    atendida: boolean;
 };
 
+type PuntoGraficoAlerta = {
+    etiqueta: string;
+    total: number;
+};
+
+const horasBase = [
+    "08:00:00",
+    "08:15:00",
+    "08:30:00",
+    "08:45:00",
+    "09:00:00",
+    "09:15:00",
+    "09:30:00",
+    "09:45:00",
+    "10:00:00",
+    "10:15:00",
+    "10:30:00",
+    "10:45:00",
+    "11:00:00",
+    "11:15:00",
+    "11:30:00",
+    "11:45:00",
+    "12:00:00",
+    "12:15:00",
+    "12:30:00",
+    "12:45:00",
+];
+
+function crearAlertas(estado: Estado, titulos: string[], descripciones: string[], idInicial: number): AlertaSistema[] {
+    return Array.from({ length: 20 }, (_, indice) => ({
+        id: idInicial + indice,
+        estado,
+        titulo: titulos[indice % titulos.length],
+        descripcion: descripciones[indice % descripciones.length],
+        hora: `2026-03-21T${horasBase[indice]}`,
+        atendida: indice % 3 !== 0,
+    }));
+}
+
+function crearDatosGrafico(base: number, variacion: number): PuntoGraficoAlerta[] {
+    return horasBase.map((hora, indice) => ({
+        etiqueta: hora.slice(0, 5),
+        total: base + (indice % 5) + Math.floor(indice / variacion),
+    }));
+}
+
+function crearAcumuladoPorTipo(alertas: AlertaSistema[]) {
+    const acumulado = new Map<string, { tipo: string; total: number; color: string }>();
+
+    alertas.forEach((alerta) => {
+        const existente = acumulado.get(alerta.titulo);
+        const color = alerta.estado === "ok" ? "#10b981" : alerta.estado === "alerta" ? "#f59e0b" : "#ef4444";
+
+        if (existente) {
+            existente.total += 1;
+            return;
+        }
+
+        acumulado.set(alerta.titulo, {
+            tipo: alerta.titulo,
+            total: 1,
+            color,
+        });
+    });
+
+    return Array.from(acumulado.values()).sort((a, b) => b.total - a.total || a.tipo.localeCompare(b.tipo));
+}
+
 function PaginaNivel1() {
-    const balanzas: ElementoMonitoreo[] = [
-        { nombre: "Balanza principal", valor: "24,580 kg", estado: "ok" },
-        { nombre: "Balanza patio", valor: "18,420 kg", estado: "ok" },
-        { nombre: "Balanza secundaria", valor: "Fuera de linea", estado: "alerta" },
-        { nombre: "Balanza despacho", valor: "Error lectura", estado: "error" },
-    ];
+    const alertasOk = crearAlertas(
+        "ok",
+        [
+            "Sistema OK",
+            "Comunicacion estable",
+            "Calibracion validada",
+            "Pesaje sincronizado",
+            "Lectura de sensores correcta",
+            "UPS en rango nominal",
+        ],
+        [
+            "Operacion estable y sin incidencias.",
+            "Los enlaces de red operan sin perdida.",
+            "La balanza principal mantiene tolerancia correcta.",
+            "El flujo de pesaje se encuentra sincronizado.",
+            "Todos los sensores reportan dentro del margen esperado.",
+            "La alimentacion de respaldo se mantiene estable.",
+        ],
+        1,
+    );
 
-    const camaras: ElementoMonitoreo[] = [
-        { nombre: "Camara LPR 1", valor: "Online", estado: "ok" },
-        { nombre: "Camara LPR 2", valor: "Online", estado: "ok" },
-        { nombre: "Camara patio", valor: "Latencia alta", estado: "alerta" },
-        { nombre: "Camara salida", valor: "Sin video", estado: "error" },
-    ];
+    const alertasAlerta = crearAlertas(
+        "alerta",
+        [
+            "Sistema en alerta",
+            "Latencia elevada",
+            "Carga UPS en observacion",
+            "Variacion en pesaje",
+            "Camara con baja luz",
+            "Temperatura elevada",
+        ],
+        [
+            "Se detecto una condicion que requiere revision.",
+            "La camara de patio responde por encima del umbral.",
+            "La UPS de cabina opera con bateria reducida.",
+            "La balanza presenta oscilacion moderada.",
+            "La imagen pierde nitidez en condiciones actuales.",
+            "El gabinete supera el nivel recomendado.",
+        ],
+        101,
+    );
 
-    const sensores: ElementoMonitoreo[] = [
-        { nombre: "Sensor IR entrada", valor: "Activo", estado: "ok" },
-        { nombre: "Sensor IR salida", valor: "Activo", estado: "ok" },
-        { nombre: "Sensor lateral izq.", valor: "Intermitente", estado: "alerta" },
-        { nombre: "Sensor lateral der.", valor: "Desconectado", estado: "error" },
-    ];
+    const alertasError = crearAlertas(
+        "error",
+        [
+            "Sistema en error",
+            "Sensor desconectado",
+            "Perdida de video",
+            "Switch sin enlace",
+            "UPS en falla",
+            "PLC sin respuesta",
+        ],
+        [
+            "Hay una falla activa que afecta la operacion.",
+            "El sensor lateral derecho no reporta telemetria.",
+            "La camara de salida quedo sin transmision.",
+            "El equipo de red dejo de reportar enlace fisico.",
+            "La unidad de respaldo entro en condicion de falla.",
+            "No se obtiene respuesta del controlador principal.",
+        ],
+        201,
+    );
 
-    const switches: ElementoMonitoreo[] = [
-        { nombre: "Switch industrial 1", valor: "8/8 puertos", estado: "ok" },
-        { nombre: "Switch industrial 2", valor: "7/8 puertos", estado: "alerta" },
-        { nombre: "Switch control", valor: "6/8 puertos", estado: "alerta" },
-        { nombre: "Switch respaldo", valor: "Sin enlace", estado: "error" },
-    ];
-
-    const equiposUps: ElementoMonitoreo[] = [
-        { nombre: "UPS balanza", valor: "98%", estado: "ok" },
-        { nombre: "UPS red", valor: "76%", estado: "ok" },
-        { nombre: "UPS cabina", valor: "42%", estado: "alerta" },
-        { nombre: "UPS respaldo", valor: "Bateria baja", estado: "error" },
-    ];
+    const graficoOk = crearDatosGrafico(4, 4);
+    const graficoAlerta = crearDatosGrafico(2, 5);
+    const graficoError = crearDatosGrafico(1, 6);
+    const todasLasAlertas = [...alertasError, ...alertasAlerta, ...alertasOk];
+    const alertasAtendidas = todasLasAlertas.filter((alerta) => alerta.atendida).length;
+    const alertasPendientes = todasLasAlertas.length - alertasAtendidas;
+    const acumuladoPorTipo = crearAcumuladoPorTipo(todasLasAlertas);
 
     return (
         <main className="p-4 h-screen flex flex-col gap-4">
@@ -63,44 +165,24 @@ function PaginaNivel1() {
                 </div>
             </header>
 
-            <section className="grid grid-cols-12 grid-rows-[1fr_1fr] gap-4 h-full">
-                <TarjetaAlertas
-                    alertas={[
-                        { id: 1, estado: "error", titulo: "Alerta 1", descripcion: "Sensor de Entrada Desconectado", hora: "08:00 AM" },
-                        { id: 2, estado: "alerta", titulo: "Alerta 2", descripcion: "Peso Excede Limite Permitido", hora: "08:05 AM" },
-                        { id: 3, estado: "ok", titulo: "Alerta 3", descripcion: "Calibracion Exitosa", hora: "08:10 AM" },
-                    ]}
+            <section className="grid h-full min-h-0 grid-cols-2 auto-rows-fr gap-4">
+                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+                    <TarjetaAlertas titulo="Alertas Sistema Error" alertas={alertasError} />
+                    <TarjetaGraficoAlertas titulo="Grafico Alertas Error" estado="error" datos={graficoError} />
+                </div>
+                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+                    <TarjetaAlertas titulo="Alertas Sistema Alerta" alertas={alertasAlerta} />
+                    <TarjetaGraficoAlertas titulo="Grafico Alertas Alerta" estado="alerta" datos={graficoAlerta} />
+                </div>
+                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+                    <TarjetaAlertas titulo="Alertas Sistema OK" alertas={alertasOk} />
+                    <TarjetaGraficoAlertas titulo="Grafico Alertas OK" estado="ok" datos={graficoOk} />
+                </div>
+                <TarjetaResumenAlertas
+                    atendidas={alertasAtendidas}
+                    pendientes={alertasPendientes}
+                    acumuladoPorTipo={acumuladoPorTipo}
                 />
-
-                <TarjetaContenedorVertical titulo="Control Balanza" icono={<BalanzaItem h={20} w={20} />}>
-                    {balanzas.map((balanza) => (
-                        <TarjetaMonitoreoGeneral key={balanza.nombre} {...balanza} />
-                    ))}
-                </TarjetaContenedorVertical>
-
-                <TarjetaContenedorVertical titulo="Control Camaras" icono={<CamaraItem h={20} w={20} />}>
-                    {camaras.map((camara) => (
-                        <TarjetaMonitoreoGeneral key={camara.nombre} {...camara} />
-                    ))}
-                </TarjetaContenedorVertical>
-
-                <TarjetaContenedorVertical titulo="Control Sensores" icono={<SensorItem h={20} w={20} />}>
-                    {sensores.map((sensor) => (
-                        <TarjetaMonitoreoGeneral key={sensor.nombre} {...sensor} />
-                    ))}
-                </TarjetaContenedorVertical>
-
-                <TarjetaContenedorVertical titulo="Control Switch" icono={<SwitchItem h={20} w={20} />}>
-                    {switches.map((switchItem) => (
-                        <TarjetaMonitoreoGeneral key={switchItem.nombre} {...switchItem} />
-                    ))}
-                </TarjetaContenedorVertical>
-
-                <TarjetaContenedorVertical titulo="Control UPS" icono={<UpsItem h={20} w={20} />}>
-                    {equiposUps.map((ups) => (
-                        <TarjetaMonitoreoGeneral key={ups.nombre} {...ups} />
-                    ))}
-                </TarjetaContenedorVertical>
             </section>
         </main>
     );
