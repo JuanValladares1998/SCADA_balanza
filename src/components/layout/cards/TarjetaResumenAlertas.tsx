@@ -29,11 +29,11 @@ function TarjetaResumenAlertas({
   ];
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+    <div className="grid h-full min-h-0 grid-cols-[1fr_2fr] gap-4">
       <article className="scada-card shadow-sm p-4 flex h-full min-h-0 flex-col">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold scada-title p-2 rounded">
-            Atencion de Alertas
+            Atención de Errores
           </h2>
           <span className="text-xs scada-text-secondary">
             {atendidas + pendientes} total
@@ -82,9 +82,9 @@ function TarjetaResumenAlertas({
       <article className="scada-card shadow-sm p-4 flex h-full min-h-0 flex-col">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold scada-title p-2 rounded">
-            Acumulado por Tipo
+            Acumulado por Tipo de Error
           </h2>
-          <span className="text-xs scada-text-secondary">Tipos repetidos por layout</span>
+          <span className="text-xs scada-text-secondary">Solo errores por layout</span>
         </div>
 
         <div className="flex-1 min-h-0">

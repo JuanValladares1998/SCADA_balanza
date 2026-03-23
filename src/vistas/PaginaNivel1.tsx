@@ -63,7 +63,7 @@ function crearAcumuladoPorTipo(alertas: AlertaSistema[]) {
 
     alertas.forEach((alerta) => {
         const existente = acumulado.get(alerta.titulo);
-        const color = alerta.estado === "ok" ? "#10b981" : alerta.estado === "alerta" ? "#f59e0b" : "#ef4444";
+        const color = alerta.estado === "ok" ? "#10b981" : alerta.estado === "alerta" ? "#f59e0b" : "#dc6b74";
 
         if (existente) {
             existente.total += 1;
@@ -150,13 +150,13 @@ function PaginaNivel1() {
     const todasLasAlertas = [...alertasError, ...alertasAlerta, ...alertasOk];
     const alertasAtendidas = todasLasAlertas.filter((alerta) => alerta.atendida).length;
     const alertasPendientes = todasLasAlertas.length - alertasAtendidas;
-    const acumuladoPorTipo = crearAcumuladoPorTipo(todasLasAlertas);
+    const acumuladoPorTipo = crearAcumuladoPorTipo(alertasError);
 
     return (
         <main className="p-4 h-screen flex flex-col gap-4">
             <header className="flex justify-between items-center mb-2">
                 <h1 className="text-2xl font-bold scada-text-primary tracking-tight">
-                    Sistema SCADA: Control de Pesaje
+                    Control de Pesaje
                 </h1>
                 <div className="flex items-center gap-4">
                     <div className="text-sm scada-text-secondary">
@@ -167,22 +167,22 @@ function PaginaNivel1() {
 
             <section className="grid h-full min-h-0 grid-cols-2 auto-rows-fr gap-4">
                 <div className="grid h-full min-h-0 grid-cols-2 gap-4">
-                    <TarjetaAlertas titulo="Alertas Sistema Error" alertas={alertasError} />
-                    <TarjetaGraficoAlertas titulo="Grafico Alertas Error" estado="error" datos={graficoError} />
-                </div>
-                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
-                    <TarjetaAlertas titulo="Alertas Sistema Alerta" alertas={alertasAlerta} />
-                    <TarjetaGraficoAlertas titulo="Grafico Alertas Alerta" estado="alerta" datos={graficoAlerta} />
-                </div>
-                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
-                    <TarjetaAlertas titulo="Alertas Sistema OK" alertas={alertasOk} />
-                    <TarjetaGraficoAlertas titulo="Grafico Alertas OK" estado="ok" datos={graficoOk} />
+                    <TarjetaAlertas titulo="Layouts Errores" alertas={alertasError} />
+                    <TarjetaGraficoAlertas titulo="Gráfico Errores" estado="error" datos={graficoError} />
                 </div>
                 <TarjetaResumenAlertas
                     atendidas={alertasAtendidas}
                     pendientes={alertasPendientes}
                     acumuladoPorTipo={acumuladoPorTipo}
                 />
+                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+                    <TarjetaAlertas titulo="Layouts Alertas" alertas={alertasAlerta} />
+                    <TarjetaGraficoAlertas titulo="Gráfico Alertas" estado="alerta" datos={graficoAlerta} />
+                </div>
+                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+                    <TarjetaAlertas titulo="Layouts Notificaciones" alertas={alertasOk} />
+                    <TarjetaGraficoAlertas titulo="Gráfico Notificaciones" estado="ok" datos={graficoOk} />
+                </div>
             </section>
         </main>
     );
