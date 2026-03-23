@@ -3,7 +3,13 @@ import { useSearchParams } from "react-router-dom";
 import { CamaraEstado, CamaraModo, LprEvento } from "../types/camara";
 import type { Estado } from "../types/Estado";
 import PerifericoList, { PerifericoItem } from "../components/PerifericoList";
-import { getAnprCameraRecords } from "../lib/api/anpr-camera-controller";
+import ModalDetalleAnpr from "../components/ModalDetalleAnpr";
+import {
+  getAnprCameraRecordById,
+  getAnprCameraRecords,
+  type AnprCameraRecord,
+  type AnprCameraRecordDetail,
+} from "../lib/api/anpr-camera-controller";
 
 const mockEvento: LprEvento = {
   plate: "ABC-123",
@@ -105,9 +111,15 @@ function PaginaCamaraLPR() {
     mockCamaras.find((camara) => camara.id === camaraIdDesdeUrl)?.id ?? mockCamaras[0].id;
 
   const [selectedId, setSelectedId] = useState<string | number>(camaraInicial);
-  const [placasRegistradas, setPlacasRegistradas] = useState<string[]>(mockCamaras[0].placasRegistradas);
+  const [placasRegistradas, setPlacasRegistradas] = useState<AnprCameraRecord[]>(
+    mockCamaras[0].placasRegistradas.map((plate, index) => ({ id: index + 1, plate })),
+  );
   const [placasError, setPlacasError] = useState<string | null>(null);
   const [cargandoPlacas, setCargandoPlacas] = useState(true);
+  const [detalleVisible, setDetalleVisible] = useState(false);
+  const [detalleSeleccionado, setDetalleSeleccionado] = useState<AnprCameraRecordDetail | null>(null);
+  const [detalleError, setDetalleError] = useState<string | null>(null);
+  const [cargandoDetalle, setCargandoDetalle] = useState(false);
 
   useEffect(() => {
     if (!camaraIdDesdeUrl) {
@@ -133,13 +145,18 @@ function PaginaCamaraLPR() {
           return;
         }
 
-        setPlacasRegistradas(registros.map((registro) => registro.plate));
+        setPlacasRegistradas(registros);
       } catch {
         if (!activo) {
           return;
         }
 
-        setPlacasRegistradas(mockCamaras.find((camara) => camara.id === selectedId)?.placasRegistradas ?? mockCamaras[0].placasRegistradas);
+        setPlacasRegistradas(
+          (mockCamaras.find((camara) => camara.id === selectedId)?.placasRegistradas ?? mockCamaras[0].placasRegistradas).map((plate, index) => ({
+            id: index + 1,
+            plate,
+          })),
+        );
         setPlacasError("No se pudieron cargar las placas desde el backend.");
       } finally {
         if (activo) {
@@ -160,6 +177,23 @@ function PaginaCamaraLPR() {
     setSelectedId(camaraId);
     setSearchParams({ camara: camaraId });
   };
+
+  const handleOpenDetalle = async (registro: AnprCameraRecord) => {
+    setDetalleVisible(true);
+    setCargandoDetalle(true);
+    setDetalleError(null);
+    setDetalleSeleccionado(null);
+
+    try {
+      const detalle = await getAnprCameraRecordById(registro.id);
+      setDetalleSeleccionado(detalle);
+    } catch {
+      setDetalleError("No se pudo cargar el detalle de la placa seleccionada.");
+    } finally {
+      setCargandoDetalle(false);
+    }
+  };
+
   const selectedCamara = mockCamaras.find((c) => c.id === selectedId) ?? mockCamaras[0];
 
   const confianza = selectedCamara.datos.ultimoEvento?.fiabilidad ?? 0;
@@ -283,13 +317,15 @@ function PaginaCamaraLPR() {
                     Cargando placas...
                   </div>
                 ) : (
-                  placasRegistradas.map((placa, indice) => (
-                    <div
-                      key={`${selectedCamara.id}-${placa}-${indice}`}
-                      className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm font-semibold text-slate-700"
+                  placasRegistradas.map((registro) => (
+                    <button
+                      key={`${selectedCamara.id}-${registro.id}`}
+                      type="button"
+                      onClick={() => void handleOpenDetalle(registro)}
+                      className="block w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left font-mono text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
                     >
-                      {placa}
-                    </div>
+                      {registro.plate}
+                    </button>
                   ))
                 )}
               </div>
@@ -297,6 +333,18 @@ function PaginaCamaraLPR() {
           </div>
         </div>
       </section>
+
+      <ModalDetalleAnpr
+        visible={detalleVisible}
+        detalle={detalleSeleccionado}
+        cargando={cargandoDetalle}
+        error={detalleError}
+        onClose={() => {
+          setDetalleVisible(false);
+          setDetalleSeleccionado(null);
+          setDetalleError(null);
+        }}
+      />
     </main>
   );
 }
