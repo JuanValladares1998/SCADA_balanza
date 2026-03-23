@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { CamaraEstado, CamaraModo, LprEvento } from "../types/camara";
 import type { Estado } from "../types/Estado";
 import PerifericoList, { PerifericoItem } from "../components/PerifericoList";
+import { getAnprCameraRecords } from "../lib/api/anpr-camera-controller";
 
 const mockEvento: LprEvento = {
   plate: "ABC-123",
@@ -46,9 +47,27 @@ const mockCamara2: CamaraEstado = {
   alertasInternas: ["Low light"],
 };
 
-const mockCamaras: Array<{ id: string; nombre: string; estado: Estado; datos: CamaraEstado }> = [
-  { id: "cam-1", nombre: "Camara LPR 1", estado: "ok", datos: mockCamara1 },
-  { id: "cam-2", nombre: "Camara LPR 2", estado: "alerta", datos: mockCamara2 },
+const mockCamaras: Array<{
+  id: string;
+  nombre: string;
+  estado: Estado;
+  datos: CamaraEstado;
+  placasRegistradas: string[];
+}> = [
+  {
+    id: "cam-1",
+    nombre: "Camara LPR 1",
+    estado: "ok",
+    datos: mockCamara1,
+    placasRegistradas: ["ABC-123", "JKL-482", "QWE-908", "TRK-551", "MNO-274", "PLA-118", "RZT-640", "VHC-332", "KLM-776", "ZXP-204", "CDE-917", "HJK-463"],
+  },
+  {
+    id: "cam-2",
+    nombre: "Camara LPR 2",
+    estado: "alerta",
+    datos: mockCamara2,
+    placasRegistradas: ["XYZ-987", "LMN-223", "FRT-604", "OPQ-119", "BVC-332", "RPL-845", "UYT-550", "AAA-104", "GHJ-662", "WER-218", "IKO-903", "NMB-471"],
+  },
 ];
 
 function classNames(...classes: Array<string | false | null | undefined>) {
@@ -86,6 +105,9 @@ function PaginaCamaraLPR() {
     mockCamaras.find((camara) => camara.id === camaraIdDesdeUrl)?.id ?? mockCamaras[0].id;
 
   const [selectedId, setSelectedId] = useState<string | number>(camaraInicial);
+  const [placasRegistradas, setPlacasRegistradas] = useState<string[]>(mockCamaras[0].placasRegistradas);
+  const [placasError, setPlacasError] = useState<string | null>(null);
+  const [cargandoPlacas, setCargandoPlacas] = useState(true);
 
   useEffect(() => {
     if (!camaraIdDesdeUrl) {
@@ -97,6 +119,42 @@ function PaginaCamaraLPR() {
     setSelectedId(camaraExiste ? camaraIdDesdeUrl : mockCamaras[0].id);
   }, [camaraIdDesdeUrl]);
 
+  useEffect(() => {
+    let activo = true;
+
+    const cargarPlacas = async () => {
+      setCargandoPlacas(true);
+      setPlacasError(null);
+
+      try {
+        const registros = await getAnprCameraRecords();
+
+        if (!activo) {
+          return;
+        }
+
+        setPlacasRegistradas(registros.map((registro) => registro.plate));
+      } catch {
+        if (!activo) {
+          return;
+        }
+
+        setPlacasRegistradas(mockCamaras.find((camara) => camara.id === selectedId)?.placasRegistradas ?? mockCamaras[0].placasRegistradas);
+        setPlacasError("No se pudieron cargar las placas desde el backend.");
+      } finally {
+        if (activo) {
+          setCargandoPlacas(false);
+        }
+      }
+    };
+
+    void cargarPlacas();
+
+    return () => {
+      activo = false;
+    };
+  }, [selectedId]);
+
   const handleSelectCamara = (id: string | number) => {
     const camaraId = String(id);
     setSelectedId(camaraId);
@@ -107,7 +165,7 @@ function PaginaCamaraLPR() {
   const confianza = selectedCamara.datos.ultimoEvento?.fiabilidad ?? 0;
 
   const modoTexto = useMemo(() => {
-    return selectedCamara.datos.modoActual === CamaraModo.DAY ? "Día" : "Noche";
+    return selectedCamara.datos.modoActual === CamaraModo.DAY ? "Dia" : "Noche";
   }, [selectedCamara.datos.modoActual]);
 
   const camarasItems: PerifericoItem[] = mockCamaras.map((cam) => ({
@@ -120,8 +178,8 @@ function PaginaCamaraLPR() {
     <main className="p-4 h-screen flex flex-col gap-4">
       <header className="flex flex-wrap justify-between items-start gap-4 mb-2">
         <div>
-          <h1 className="text-2xl font-bold scada-text-primary tracking-tight">Cámara LPR Survision</h1>
-          <p className="text-sm text-slate-500">Última lectura de placa y estado de la cámara.</p>
+          <h1 className="text-2xl font-bold scada-text-primary tracking-tight">Camara LPR Survision</h1>
+          <p className="text-sm text-slate-500">Ultima lectura de placa y estado de la camara.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -135,15 +193,15 @@ function PaginaCamaraLPR() {
         </div>
       </header>
 
-      <section className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 flex-1">
+      <section className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
         <PerifericoList
-          title="Cámaras"
+          title="Camaras"
           items={camarasItems}
           selectedId={selectedId}
           onSelect={handleSelectCamara}
         />
 
-        <div className="scada-card p-4">
+        <div className="scada-card flex h-full min-h-0 flex-col p-4">
           <h2 className="text-lg font-semibold scada-text-primary mb-3">Visualizador LPR</h2>
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
             <div className="rounded-xl bg-slate-900 overflow-hidden flex items-center justify-center p-10">
@@ -153,13 +211,13 @@ function PaginaCamaraLPR() {
                   <path d="M12 9v4" />
                   <path d="M12 17h.01" />
                 </svg>
-                <div className="text-lg font-semibold text-white">SIN SEÑAL</div>
-                <div className="text-xs text-slate-200">Verifique conexión de la cámara</div>
+                <div className="text-lg font-semibold text-white">SIN SENAL</div>
+                <div className="text-xs text-slate-200">Verifique conexion de la camara</div>
               </div>
             </div>
             <div className="flex flex-col gap-3">
               <div className="rounded-lg border border-slate-200 bg-white p-3">
-                <div className="text-xs text-slate-500">Última placa detectada</div>
+                <div className="text-xs text-slate-500">Ultima placa detectada</div>
                 <div className="mt-1 text-xl font-semibold">{selectedCamara.datos.ultimoEvento?.plate}</div>
                 <div className="text-xs text-slate-500">
                   {new Date(selectedCamara.datos.ultimoEvento?.timestamp ?? "").toLocaleString()}
@@ -173,7 +231,7 @@ function PaginaCamaraLPR() {
 
               <div className="rounded-lg border border-slate-200 bg-white p-3">
                 <div className="text-xs text-slate-500">Temperatura interna</div>
-                <div className="mt-1 text-lg font-semibold">{selectedCamara.datos.temperatura.toFixed(1)}°C</div>
+                <div className="mt-1 text-lg font-semibold">{selectedCamara.datos.temperatura.toFixed(1)}C</div>
               </div>
             </div>
           </div>
@@ -189,24 +247,51 @@ function PaginaCamaraLPR() {
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-3">
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="text-xs text-slate-500">Estado de conexión</div>
-              <div
-                className={classNames(
-                  "mt-1 text-lg font-semibold",
-                  selectedCamara.datos.conectado ? "text-emerald-600" : "text-red-600",
-                )}
-              >
-                {selectedCamara.datos.conectado ? "Online" : "Offline"}
+          <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-2">
+            <div className="grid min-h-0 grid-cols-1 auto-rows-fr gap-3">
+              <div className="rounded-lg border border-slate-200 bg-white p-3 h-full">
+                <div className="text-xs text-slate-500">Estado de conexion</div>
+                <div
+                  className={classNames(
+                    "mt-1 text-lg font-semibold",
+                    selectedCamara.datos.conectado ? "text-emerald-600" : "text-red-600",
+                  )}
+                >
+                  {selectedCamara.datos.conectado ? "Online" : "Offline"}
+                </div>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white p-3 h-full">
+                <div className="text-xs text-slate-500">Eventos recientes</div>
+                <div className="mt-1 text-sm text-slate-700">
+                  {selectedCamara.datos.alertasInternas.length > 0
+                    ? selectedCamara.datos.alertasInternas.join(", ")
+                    : "Sin alertas"}
+                </div>
               </div>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="text-xs text-slate-500">Eventos recientes</div>
-              <div className="mt-1 text-sm text-slate-700">
-                {selectedCamara.datos.alertasInternas.length > 0
-                  ? selectedCamara.datos.alertasInternas.join(", ")
-                  : "Sin alertas"}
+
+            <div className="rounded-lg border border-slate-200 bg-white p-3 min-h-0 flex flex-col">
+              <div className="text-xs text-slate-500">Placas registradas por la camara</div>
+              {placasError ? (
+                <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                  {placasError}
+                </div>
+              ) : null}
+              <div className="mt-2 min-h-0 flex-1 overflow-y-auto space-y-2 pr-1">
+                {cargandoPlacas ? (
+                  <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+                    Cargando placas...
+                  </div>
+                ) : (
+                  placasRegistradas.map((placa, indice) => (
+                    <div
+                      key={`${selectedCamara.id}-${placa}-${indice}`}
+                      className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm font-semibold text-slate-700"
+                    >
+                      {placa}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
