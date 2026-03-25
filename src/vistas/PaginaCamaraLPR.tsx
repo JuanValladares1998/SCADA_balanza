@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import Hls from "hls.js";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { CamaraEstado, CamaraModo, LprEvento } from "../types/camara";
 import type { Estado } from "../types/Estado";
@@ -105,6 +106,7 @@ function IconoModo({ modo }: { modo: CamaraModo }) {
 }
 
 function PaginaCamaraLPR() {
+  const streamUrl = import.meta.env.VITE_CAMERA_LPR_STREAM_URL;
   const [searchParams, setSearchParams] = useSearchParams();
   const camaraIdDesdeUrl = searchParams.get("camara");
   const camaraInicial =
@@ -119,6 +121,8 @@ function PaginaCamaraLPR() {
   const [detalleSeleccionado, setDetalleSeleccionado] = useState<AnprCameraRecordDetail | null>(null);
   const [detalleError, setDetalleError] = useState<string | null>(null);
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     if (!camaraIdDesdeUrl) {
@@ -170,6 +174,74 @@ function PaginaCamaraLPR() {
       activo = false;
     };
   }, [selectedId]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video || !streamUrl) {
+      return;
+    }
+
+    setStreamError(null);
+    video.muted = true;
+    video.autoplay = true;
+    video.playsInline = true;
+
+    const intentarReproducir = async () => {
+      try {
+        await video.play();
+      } catch {
+        setStreamError("El stream cargo, pero el navegador no pudo iniciar la reproduccion automaticamente.");
+      }
+    };
+
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = streamUrl;
+      const onLoadedMetadata = () => {
+        void intentarReproducir();
+      };
+      video.addEventListener("loadedmetadata", onLoadedMetadata);
+
+      return () => {
+        video.removeEventListener("loadedmetadata", onLoadedMetadata);
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      };
+    }
+
+    if (!Hls.isSupported()) {
+      setStreamError("El navegador no soporta reproduccion HLS.");
+      return;
+    }
+
+    const hls = new Hls();
+    hls.loadSource(streamUrl);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      void intentarReproducir();
+    });
+    hls.on(Hls.Events.ERROR, (_, data) => {
+      if (data.fatal) {
+        setStreamError("No se pudo cargar el stream de la camara.");
+
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          hls.startLoad();
+        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          hls.recoverMediaError();
+        } else {
+          hls.destroy();
+        }
+      }
+    });
+
+    return () => {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      hls.destroy();
+    };
+  }, [streamUrl]);
 
   const handleSelectCamara = (id: string | number) => {
     const camaraId = String(id);
@@ -235,19 +307,34 @@ function PaginaCamaraLPR() {
 
         <div className="scada-card flex h-full min-h-0 flex-col p-4">
           <h2 className="text-lg font-semibold scada-text-primary mb-3">Visualizador LPR</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
-            <div className="rounded-xl bg-slate-900 overflow-hidden flex items-center justify-center p-10">
-              <div className="flex flex-col items-center gap-2 text-center">
-                <svg viewBox="0 0 24 24" className="h-10 w-10 text-red-500" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <path d="M12 9v4" />
-                  <path d="M12 17h.01" />
-                </svg>
-                <div className="text-lg font-semibold text-white">SIN SENAL</div>
-                <div className="text-xs text-slate-200">Verifique conexion de la camara</div>
-              </div>
+          <div className="flex gap-4">
+            <div className="relative flex items-center justify-center overflow-hidden rounded-xl bg-slate-900">
+              <video
+                ref={videoRef}
+                className="h-[250px] min-h-[150px] max-w-full bg-slate-950 object-contain"
+                autoPlay
+                muted
+                playsInline
+                controls
+              />
+              {streamError ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 p-6">
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-white">SIN SENAL</div>
+                    <div className="mt-2 text-xs text-slate-200">{streamError}</div>
+                  </div>
+                </div>
+              ) : null}
+              {!streamUrl ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 p-6">
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-white">STREAM NO CONFIGURADO</div>
+                    <div className="mt-2 text-xs text-slate-200">Define VITE_CAMERA_LPR_STREAM_URL en el entorno.</div>
+                  </div>
+                </div>
+              ) : null}
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-1 flex-col gap-3">
               <div className="rounded-lg border border-slate-200 bg-white p-3">
                 <div className="text-xs text-slate-500">Ultima placa detectada</div>
                 <div className="mt-1 text-xl font-semibold">{selectedCamara.datos.ultimoEvento?.plate}</div>
