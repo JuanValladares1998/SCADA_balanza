@@ -7,10 +7,11 @@ import PerifericoList, { PerifericoItem } from "../components/PerifericoList";
 import DetalleAnprPanel from "../components/DetalleAnprPanel";
 import {
   getAnprCameraRecordById,
-  getAnprCameraRecords,
   type AnprCameraRecord,
   type AnprCameraRecordDetail,
 } from "../lib/api/anpr-camera-controller";
+import { createMqttClient } from "../lib/mqtt/client";
+import { formatearPlaca } from "../utils/placas";
 
 const mockEvento: LprEvento = {
   plate: "ABC-123",
@@ -59,23 +60,20 @@ const mockCamaras: Array<{
   nombre: string;
   estado: Estado;
   datos: CamaraEstado;
-  placasRegistradas: string[];
 }> = [
-  {
-    id: "cam-1",
-    nombre: "Camara LPR 1",
-    estado: "ok",
-    datos: mockCamara1,
-    placasRegistradas: ["ABC-123", "JKL-482", "QWE-908", "TRK-551", "MNO-274", "PLA-118", "RZT-640", "VHC-332", "KLM-776", "ZXP-204", "CDE-917", "HJK-463"],
-  },
-  {
-    id: "cam-2",
-    nombre: "Camara LPR 2",
-    estado: "alerta",
-    datos: mockCamara2,
-    placasRegistradas: ["XYZ-987", "LMN-223", "FRT-604", "OPQ-119", "BVC-332", "RPL-845", "UYT-550", "AAA-104", "GHJ-662", "WER-218", "IKO-903", "NMB-471"],
-  },
-];
+    {
+      id: "cam-1",
+      nombre: "Camara LPR 1",
+      estado: "ok",
+      datos: mockCamara1,
+    },
+    {
+      id: "cam-2",
+      nombre: "Camara LPR 2",
+      estado: "alerta",
+      datos: mockCamara2,
+    },
+  ];
 
 function classNames(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -113,14 +111,14 @@ function PaginaCamaraLPR() {
     mockCamaras.find((camara) => camara.id === camaraIdDesdeUrl)?.id ?? mockCamaras[0].id;
 
   const [selectedId, setSelectedId] = useState<string | number>(camaraInicial);
-  const [placasRegistradas, setPlacasRegistradas] = useState<AnprCameraRecord[]>(
-    mockCamaras[0].placasRegistradas.map((plate, index) => ({ id: index + 1, plate })),
-  );
+  const [placasRegistradas, setPlacasRegistradas] = useState<AnprCameraRecord[]>([]);
   const [placasError, setPlacasError] = useState<string | null>(null);
   const [cargandoPlacas, setCargandoPlacas] = useState(true);
   const [detalleSeleccionado, setDetalleSeleccionado] = useState<AnprCameraRecordDetail | null>(null);
   const [detalleError, setDetalleError] = useState<string | null>(null);
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
+  const [mqttStatus, setMqttStatus] = useState("Desconectado");
+  const [mqttMessage, setMqttMessage] = useState<string | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -134,46 +132,108 @@ function PaginaCamaraLPR() {
     setSelectedId(camaraExiste ? camaraIdDesdeUrl : mockCamaras[0].id);
   }, [camaraIdDesdeUrl]);
 
+  const nextIdRef = useRef(1);
+
   useEffect(() => {
-    let activo = true;
+    const brokerUrl = import.meta.env.VITE_MQTT_BROKER_WS;
 
-    const cargarPlacas = async () => {
-      setCargandoPlacas(true);
-      setPlacasError(null);
+    if (!brokerUrl) {
+      setMqttStatus("No configurado");
+      setCargandoPlacas(false);
+      return;
+    }
 
-      try {
-        const registros = await getAnprCameraRecords();
+    const client = createMqttClient(brokerUrl);
+    setMqttStatus("Conectando...");
 
-        if (!activo) {
-          return;
+    const agregarPlaca = (registro: AnprCameraRecord) => {
+      setPlacasRegistradas((prev) => {
+        const next = [registro, ...prev.filter((r) => r.id !== registro.id)];
+        if (next.length > 20) {
+          next.length = 20;
         }
-
-        setPlacasRegistradas(registros);
-      } catch {
-        if (!activo) {
-          return;
-        }
-
-        setPlacasRegistradas(
-          (mockCamaras.find((camara) => camara.id === selectedId)?.placasRegistradas ?? mockCamaras[0].placasRegistradas).map((plate, index) => ({
-            id: index + 1,
-            plate,
-          })),
-        );
-        setPlacasError("No se pudieron cargar las placas desde el backend.");
-      } finally {
-        if (activo) {
-          setCargandoPlacas(false);
-        }
-      }
+        return next;
+      });
     };
 
-    void cargarPlacas();
+    const crearRegistro = (payloadString: string): AnprCameraRecord | null => {
+      try {
+        const parsed = JSON.parse(payloadString);
+        const payload = typeof parsed?.payload === "object" && parsed.payload !== null
+          ? (parsed.payload as Record<string, unknown>)
+          : null;
+        const detail =
+          payload && typeof payload.anpr === "object" && payload.anpr !== null
+            ? (payload.anpr as Record<string, unknown>)
+            : null;
+        const parsedApiId =
+          typeof parsed?.apiId === "string" || typeof parsed?.apiId === "number"
+            ? Number(parsed.apiId)
+            : Number.NaN;
+        const apiId = Number.isFinite(parsedApiId) ? parsedApiId : undefined;
+        const id = apiId ?? nextIdRef.current++;
+        const decision =
+          typeof detail?.decision === "object" && detail.decision !== null
+            ? (detail.decision as Record<string, unknown>)
+            : null;
+        const cameraEventId =
+          typeof detail?.["@id"] === "string" || typeof detail?.["@id"] === "number"
+            ? String(detail["@id"])
+            : undefined;
+        const plate =
+          typeof parsed?.plate === "string"
+            ? parsed.plate.trim()
+            : typeof decision?.["@plate"] === "string"
+              ? decision["@plate"].trim()
+              : "";
+        const eventDate = typeof detail?.["@date"] === "string" ? detail["@date"] : undefined;
+        const eventTimestamp =
+          eventDate && Number.isFinite(Number(eventDate))
+            ? new Date(Number(eventDate)).toISOString()
+            : new Date().toISOString();
+        if (plate) {
+          return { id, apiId, plate, cameraEventId, eventDate, eventTimestamp };
+        }
+      } catch {
+        return null;
+      }
+
+      return null;
+    };
+
+    client.on("connect", () => {
+      setMqttStatus("Conectado");
+      client.subscribe("/tra/camara/anpr", { qos: 0 }, () => { });
+      client.subscribe("tra/camara/anpr", { qos: 0 }, () => { });
+    });
+
+    client.on("error", () => {
+      setMqttStatus("Error");
+      client.end();
+    });
+
+    client.on("message", (topic, payload) => {
+      const payloadString = payload.toString();
+      console.log("MQTT topic:", topic);
+      console.log("MQTT payload:", payloadString);
+
+      const registro = crearRegistro(payloadString);
+      console.log("MQTT registro parseado:", registro);
+
+      if (registro) {
+        setMqttMessage(registro.plate);
+        agregarPlaca(registro);
+        setPlacasError(null);
+      }
+
+      setCargandoPlacas(false);
+    });
+
 
     return () => {
-      activo = false;
+      client.end();
     };
-  }, [selectedId]);
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -255,7 +315,13 @@ function PaginaCamaraLPR() {
     setDetalleSeleccionado(null);
 
     try {
-      const detalle = await getAnprCameraRecordById(registro.id);
+      const apiId = registro.apiId ?? registro.id;
+
+      if (!apiId) {
+        throw new Error("No se pudo resolver el id del detalle.");
+      }
+
+      const detalle = await getAnprCameraRecordById(apiId);
       setDetalleSeleccionado(detalle);
     } catch {
       setDetalleError("No se pudo cargar el detalle de la placa seleccionada.");
@@ -265,6 +331,35 @@ function PaginaCamaraLPR() {
   };
 
   const selectedCamara = mockCamaras.find((c) => c.id === selectedId) ?? mockCamaras[0];
+
+  useEffect(() => {
+    const brokerUrl = import.meta.env.VITE_MQTT_BROKER_WS;
+
+    if (!brokerUrl) {
+      setMqttStatus("No configurado");
+      return;
+    }
+
+    const client = createMqttClient(brokerUrl);
+    setMqttStatus("Conectando...");
+
+    client.on("connect", () => {
+      setMqttStatus("Conectado");
+      client.subscribe("camara/lpr/status", { qos: 0 }, () => { });
+    });
+
+    client.on("error", () => {
+      setMqttStatus("Error");
+    });
+
+    client.on("message", (_, payload) => {
+      setMqttMessage(payload.toString());
+    });
+
+    return () => {
+      client.end();
+    };
+  }, []);
 
   const confianza = selectedCamara.datos.ultimoEvento?.fiabilidad ?? 0;
 
@@ -294,7 +389,16 @@ function PaginaCamaraLPR() {
           <div>
             <span className="font-semibold">FPS:</span> {selectedCamara.datos.fps}
           </div>
+          <div className="text-xs text-slate-500">
+            MQTT: <span className="font-semibold text-slate-900">{mqttStatus}</span>
+          </div>
         </div>
+
+        {/* {mqttMessage ? (
+          <div className="text-xs text-slate-500 w-full">
+            Último mensaje MQTT: <span className="text-slate-900 font-semibold">{mqttMessage}</span>
+          </div>
+        ) : null} */}
       </header>
 
       <section className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
@@ -406,7 +510,7 @@ function PaginaCamaraLPR() {
                       onClick={() => void handleOpenDetalle(registro)}
                       className="block w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left font-mono text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
                     >
-                      {registro.plate}
+                      {formatearPlaca(registro.plate)}
                     </button>
                   ))
                 )}

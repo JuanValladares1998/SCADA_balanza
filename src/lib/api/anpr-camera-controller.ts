@@ -3,6 +3,10 @@ import { apiRequest } from "./client";
 export type AnprCameraRecord = {
   id: number;
   plate: string;
+  apiId?: number;
+  cameraEventId?: string;
+  eventDate?: string;
+  eventTimestamp?: string;
 };
 
 export type AnprCameraRecordDetail = {
