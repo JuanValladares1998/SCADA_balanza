@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { CamaraEstado, CamaraModo, LprEvento } from "../types/camara";
 import type { Estado } from "../types/Estado";
 import PerifericoList, { PerifericoItem } from "../components/PerifericoList";
-import ModalDetalleAnpr from "../components/ModalDetalleAnpr";
+import DetalleAnprPanel from "../components/DetalleAnprPanel";
 import {
   getAnprCameraRecordById,
   getAnprCameraRecords,
@@ -116,7 +116,6 @@ function PaginaCamaraLPR() {
   );
   const [placasError, setPlacasError] = useState<string | null>(null);
   const [cargandoPlacas, setCargandoPlacas] = useState(true);
-  const [detalleVisible, setDetalleVisible] = useState(false);
   const [detalleSeleccionado, setDetalleSeleccionado] = useState<AnprCameraRecordDetail | null>(null);
   const [detalleError, setDetalleError] = useState<string | null>(null);
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
@@ -179,7 +178,6 @@ function PaginaCamaraLPR() {
   };
 
   const handleOpenDetalle = async (registro: AnprCameraRecord) => {
-    setDetalleVisible(true);
     setCargandoDetalle(true);
     setDetalleError(null);
     setDetalleSeleccionado(null);
@@ -270,7 +268,7 @@ function PaginaCamaraLPR() {
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-600">
+          <div className="mt-4 grid grid-cols-1 gap-3 text-sm text-slate-600 lg:grid-cols-4">
             <div className="rounded-lg border border-slate-200 bg-white p-3">
               <div className="text-xs text-slate-500">Lecturas exitosas</div>
               <div className="mt-1 text-lg font-semibold">{selectedCamara.datos.ratioRespuestasExitosas}%</div>
@@ -279,31 +277,28 @@ function PaginaCamaraLPR() {
               <div className="text-xs text-slate-500">Errores</div>
               <div className="mt-1 text-lg font-semibold">{selectedCamara.datos.ratioErrores}%</div>
             </div>
-          </div>
-
-          <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-2">
-            <div className="grid min-h-0 grid-cols-1 auto-rows-fr gap-3">
-              <div className="rounded-lg border border-slate-200 bg-white p-3 h-full">
-                <div className="text-xs text-slate-500">Estado de conexion</div>
-                <div
-                  className={classNames(
-                    "mt-1 text-lg font-semibold",
-                    selectedCamara.datos.conectado ? "text-emerald-600" : "text-red-600",
-                  )}
-                >
-                  {selectedCamara.datos.conectado ? "Online" : "Offline"}
-                </div>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3 h-full">
-                <div className="text-xs text-slate-500">Eventos recientes</div>
-                <div className="mt-1 text-sm text-slate-700">
-                  {selectedCamara.datos.alertasInternas.length > 0
-                    ? selectedCamara.datos.alertasInternas.join(", ")
-                    : "Sin alertas"}
-                </div>
+            <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="text-xs text-slate-500">Estado de conexion</div>
+              <div
+                className={classNames(
+                  "mt-1 text-lg font-semibold",
+                  selectedCamara.datos.conectado ? "text-emerald-600" : "text-red-600",
+                )}
+              >
+                {selectedCamara.datos.conectado ? "Online" : "Offline"}
               </div>
             </div>
+            <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="text-xs text-slate-500">Eventos recientes</div>
+              <div className="mt-1 text-sm text-slate-700">
+                {selectedCamara.datos.alertasInternas.length > 0
+                  ? selectedCamara.datos.alertasInternas.join(", ")
+                  : "Sin alertas"}
+              </div>
+            </div>
+          </div>
 
+          <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[320px_minmax(0,1fr)]">
             <div className="rounded-lg border border-slate-200 bg-white p-3 min-h-0 flex flex-col">
               <div className="text-xs text-slate-500">Placas registradas por la camara</div>
               {placasError ? (
@@ -330,21 +325,15 @@ function PaginaCamaraLPR() {
                 )}
               </div>
             </div>
+
+            <DetalleAnprPanel
+              detalle={detalleSeleccionado}
+              cargando={cargandoDetalle}
+              error={detalleError}
+            />
           </div>
         </div>
       </section>
-
-      <ModalDetalleAnpr
-        visible={detalleVisible}
-        detalle={detalleSeleccionado}
-        cargando={cargandoDetalle}
-        error={detalleError}
-        onClose={() => {
-          setDetalleVisible(false);
-          setDetalleSeleccionado(null);
-          setDetalleError(null);
-        }}
-      />
     </main>
   );
 }
