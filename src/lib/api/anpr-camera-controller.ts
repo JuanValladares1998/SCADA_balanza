@@ -4,8 +4,23 @@ export type AnprCameraRecord = {
   id: number;
   plate: string;
   apiId?: number;
-  cameraEventId?: string;
-  eventDate?: string;
+  synchronizedFlag?: number;
+  session?: number;
+  cameraEventId?: number;
+  eventDate?: number;
+  countryCode?: string;
+  countryIsoAlpha2?: string;
+  countryIsoAlpha3?: string;
+  direction?: string;
+  reliability?: number;
+  plateOccurences?: number;
+  squarePlate?: number;
+  sinus?: number;
+  positionX?: number;
+  positionY?: number;
+  width?: number;
+  height?: number;
+  jpeg?: string;
   eventTimestamp?: string;
 };
 

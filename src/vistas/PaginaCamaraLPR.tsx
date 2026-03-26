@@ -11,6 +11,7 @@ import {
   type AnprCameraRecordDetail,
 } from "../lib/api/anpr-camera-controller";
 import { createMqttClient } from "../lib/mqtt/client";
+import { parseMqttAnprMessage } from "../utils/mqtt-anpr";
 import { formatearPlaca } from "../utils/placas";
 
 const mockEvento: LprEvento = {
@@ -156,51 +157,6 @@ function PaginaCamaraLPR() {
       });
     };
 
-    const crearRegistro = (payloadString: string): AnprCameraRecord | null => {
-      try {
-        const parsed = JSON.parse(payloadString);
-        const payload = typeof parsed?.payload === "object" && parsed.payload !== null
-          ? (parsed.payload as Record<string, unknown>)
-          : null;
-        const detail =
-          payload && typeof payload.anpr === "object" && payload.anpr !== null
-            ? (payload.anpr as Record<string, unknown>)
-            : null;
-        const parsedApiId =
-          typeof parsed?.apiId === "string" || typeof parsed?.apiId === "number"
-            ? Number(parsed.apiId)
-            : Number.NaN;
-        const apiId = Number.isFinite(parsedApiId) ? parsedApiId : undefined;
-        const id = apiId ?? nextIdRef.current++;
-        const decision =
-          typeof detail?.decision === "object" && detail.decision !== null
-            ? (detail.decision as Record<string, unknown>)
-            : null;
-        const cameraEventId =
-          typeof detail?.["@id"] === "string" || typeof detail?.["@id"] === "number"
-            ? String(detail["@id"])
-            : undefined;
-        const plate =
-          typeof parsed?.plate === "string"
-            ? parsed.plate.trim()
-            : typeof decision?.["@plate"] === "string"
-              ? decision["@plate"].trim()
-              : "";
-        const eventDate = typeof detail?.["@date"] === "string" ? detail["@date"] : undefined;
-        const eventTimestamp =
-          eventDate && Number.isFinite(Number(eventDate))
-            ? new Date(Number(eventDate)).toISOString()
-            : new Date().toISOString();
-        if (plate) {
-          return { id, apiId, plate, cameraEventId, eventDate, eventTimestamp };
-        }
-      } catch {
-        return null;
-      }
-
-      return null;
-    };
-
     client.on("connect", () => {
       setMqttStatus("Conectado");
       client.subscribe("/tra/camara/anpr", { qos: 0 }, () => { });
@@ -212,13 +168,16 @@ function PaginaCamaraLPR() {
       client.end();
     });
 
-    client.on("message", (topic, payload) => {
+    client.on("message", (_, payload) => {
       const payloadString = payload.toString();
-      // console.log("MQTT topic:", topic);
-      // console.log("MQTT payload:", payloadString);
 
-      const registro = crearRegistro(payloadString);
-      console.log("MQTT registro parseado:", registro);
+      console.log("Mensaje MQTT recibido:", payloadString);
+
+      const registro = parseMqttAnprMessage(payloadString, nextIdRef.current);
+
+      if (registro && registro.apiId === undefined) {
+        nextIdRef.current += 1;
+      }
 
       if (registro) {
         setMqttMessage(registro.plate);
@@ -489,7 +448,15 @@ function PaginaCamaraLPR() {
                       key={`${selectedCamara.id}-${registro.id}`}
                       type="button"
                       onClick={() => void handleOpenDetalle(registro)}
-                      className="block w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left font-mono text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+                      className={`block w-full rounded-md border px-3 py-2 text-left font-mono text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 
+                        ${registro.reliability === undefined
+                          ? "border-slate-200 bg-slate-50"
+                          : registro.reliability > 80
+                              ? "border-status-ok bg-status-ok"
+                              : registro.reliability >= 50
+                                ? "border-status-alerta bg-status-alerta"
+                              : "border-status-error bg-status-error"
+                        }`}
                     >
                       {formatearPlaca(registro.plate)}
                     </button>
@@ -506,7 +473,7 @@ function PaginaCamaraLPR() {
           </div>
         </div>
       </section>
-    </main>
+    </main >
   );
 }
 
