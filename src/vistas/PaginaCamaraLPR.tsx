@@ -214,8 +214,8 @@ function PaginaCamaraLPR() {
 
     client.on("message", (topic, payload) => {
       const payloadString = payload.toString();
-      console.log("MQTT topic:", topic);
-      console.log("MQTT payload:", payloadString);
+      // console.log("MQTT topic:", topic);
+      // console.log("MQTT payload:", payloadString);
 
       const registro = crearRegistro(payloadString);
       console.log("MQTT registro parseado:", registro);
@@ -386,9 +386,6 @@ function PaginaCamaraLPR() {
             <IconoModo modo={selectedCamara.datos.modoActual} />
             <span className="font-semibold">Modo:</span> {modoTexto}
           </div>
-          <div>
-            <span className="font-semibold">FPS:</span> {selectedCamara.datos.fps}
-          </div>
           <div className="text-xs text-slate-500">
             MQTT: <span className="font-semibold text-slate-900">{mqttStatus}</span>
           </div>
@@ -410,7 +407,7 @@ function PaginaCamaraLPR() {
         />
 
         <div className="scada-card flex h-full min-h-0 flex-col p-4">
-          <h2 className="text-lg font-semibold scada-text-primary mb-3">Visualizador LPR</h2>
+          <h2 className="text-lg font-semibold scada-text-primary mb-3">Visualizador {selectedCamara.nombre}</h2>
           <div className="flex gap-4">
             <div className="relative flex items-center justify-center overflow-hidden rounded-xl bg-slate-900">
               <video
@@ -438,7 +435,7 @@ function PaginaCamaraLPR() {
                 </div>
               ) : null}
             </div>
-            <div className="flex flex-1 flex-col gap-3">
+            <div className="grid grid-cols-2 gap-3 w-full">
               <div className="rounded-lg border border-slate-200 bg-white p-3">
                 <div className="text-xs text-slate-500">Ultima placa detectada</div>
                 <div className="mt-1 text-xl font-semibold">{selectedCamara.datos.ultimoEvento?.plate}</div>
@@ -451,42 +448,26 @@ function PaginaCamaraLPR() {
                 <div className="text-xs text-slate-500">Confianza promedio</div>
                 <div className="mt-1 text-3xl font-semibold text-emerald-600">{confianza}%</div>
               </div>
-
               <div className="rounded-lg border border-slate-200 bg-white p-3">
-                <div className="text-xs text-slate-500">Temperatura interna</div>
-                <div className="mt-1 text-lg font-semibold">{selectedCamara.datos.temperatura.toFixed(1)}C</div>
+                <div className="text-xs text-slate-500">Errores</div>
+                <div className="mt-1 text-lg font-semibold">{selectedCamara.datos.ratioErrores}%</div>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white p-3">
+                <div className="text-xs text-slate-500">Estado de conexion</div>
+                <div
+                  className={classNames(
+                    "mt-1 text-lg font-semibold",
+                    selectedCamara.datos.conectado ? "text-emerald-600" : "text-red-600",
+                  )}
+                >
+                  {selectedCamara.datos.conectado ? "Online" : "Offline"}
+                </div>
               </div>
             </div>
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-3 text-sm text-slate-600 lg:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="text-xs text-slate-500">Lecturas exitosas</div>
-              <div className="mt-1 text-lg font-semibold">{selectedCamara.datos.ratioRespuestasExitosas}%</div>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="text-xs text-slate-500">Errores</div>
-              <div className="mt-1 text-lg font-semibold">{selectedCamara.datos.ratioErrores}%</div>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="text-xs text-slate-500">Estado de conexion</div>
-              <div
-                className={classNames(
-                  "mt-1 text-lg font-semibold",
-                  selectedCamara.datos.conectado ? "text-emerald-600" : "text-red-600",
-                )}
-              >
-                {selectedCamara.datos.conectado ? "Online" : "Offline"}
-              </div>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="text-xs text-slate-500">Eventos recientes</div>
-              <div className="mt-1 text-sm text-slate-700">
-                {selectedCamara.datos.alertasInternas.length > 0
-                  ? selectedCamara.datos.alertasInternas.join(", ")
-                  : "Sin alertas"}
-              </div>
-            </div>
+
           </div>
 
           <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[320px_minmax(0,1fr)]">
