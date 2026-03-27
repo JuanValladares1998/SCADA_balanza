@@ -1,12 +1,22 @@
-import { useEffect, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "scada-sidebar-collapsed";
 
-const navigation = [
+type SidebarMode = "design" | "execution";
+
+type NavigationItem = {
+  to: string;
+  label: string;
+  mode: SidebarMode;
+  icon: ReactNode;
+};
+
+const navigation: NavigationItem[] = [
   {
     to: "/dashboard",
     label: "Dashboard",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M3 9.5L12 3l9 6.5v11a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-11z" />
@@ -16,6 +26,7 @@ const navigation = [
   {
     to: "/nivel-1",
     label: "Nivel 1",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M3 12h18" />
@@ -27,6 +38,7 @@ const navigation = [
   {
     to: "/balanza",
     label: "Balanza",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M6 7h12" />
@@ -39,6 +51,7 @@ const navigation = [
   {
     to: "/ups",
     label: "UPS",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M5 3h14v18H5z" />
@@ -51,6 +64,7 @@ const navigation = [
   {
     to: "/switch",
     label: "Switch",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M4 6h16v4H4z" />
@@ -63,6 +77,7 @@ const navigation = [
   {
     to: "/sensores-ir",
     label: "Sensores IR",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M3 12h18" />
@@ -74,7 +89,8 @@ const navigation = [
   },
   {
     to: "/camara-lpr",
-    label: "Cámara LPR",
+    label: "Camara LPR",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M5 7h14v11H5z" />
@@ -86,6 +102,7 @@ const navigation = [
   {
     to: "/cartel-led",
     label: "Cartel LED",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <rect x="3" y="6" width="18" height="10" rx="2" />
@@ -99,6 +116,7 @@ const navigation = [
   {
     to: "/alertas",
     label: "Alertas",
+    mode: "design",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2z" />
@@ -109,6 +127,7 @@ const navigation = [
   {
     to: "/diagrama-editar",
     label: "Diagrama",
+    mode: "execution",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M4 4h7v7H4z" />
@@ -121,6 +140,7 @@ const navigation = [
   {
     to: "/almacenes",
     label: "Almacenes",
+    mode: "execution",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M4 7v13h16V7L12 2 4 7z" />
@@ -132,6 +152,8 @@ const navigation = [
 ];
 
 const SidebarLayout = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -144,6 +166,17 @@ const SidebarLayout = () => {
     window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(collapsed));
   }, [collapsed]);
 
+  const currentMode = useMemo<SidebarMode>(() => {
+    return location.pathname === "/almacenes" || location.pathname === "/diagrama-editar"
+      ? "execution"
+      : "design";
+  }, [location.pathname]);
+
+  const visibleNavigation = useMemo(
+    () => navigation.filter((item) => item.mode === currentMode),
+    [currentMode],
+  );
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       <aside
@@ -151,15 +184,15 @@ const SidebarLayout = () => {
           collapsed ? "w-16" : "w-64"
         }`}
       >
-        <div className="flex items-center justify-between px-3 py-4 border-b border-slate-200">
+        <div className="flex items-center justify-between border-b border-slate-200 px-3 py-4">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center justify-center h-8 w-8 rounded bg-slate-100 text-slate-700 font-bold">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded bg-slate-100 font-bold text-slate-700">
               SC
             </span>
             {!collapsed && (
               <div>
                 <h1 className="text-lg font-bold tracking-tight">SCADA Balanza</h1>
-                <p className="text-xs text-slate-500">Sistema de Supervisión</p>
+                <p className="text-xs text-slate-500">Sistema de Supervision</p>
               </div>
             )}
           </div>
@@ -168,21 +201,46 @@ const SidebarLayout = () => {
             type="button"
             onClick={() => setCollapsed((prev) => !prev)}
             className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-            aria-label={collapsed ? "Expandir menú" : "Contraer menú"}
-            title={collapsed ? "Expandir menú" : "Contraer menú"}
+            aria-label={collapsed ? "Expandir menu" : "Contraer menu"}
+            title={collapsed ? "Expandir menu" : "Contraer menu"}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-              {collapsed ? (
-                <path d="M9 18l6-6-6-6" />
-              ) : (
-                <path d="M15 18l-6-6 6-6" />
-              )}
+              {collapsed ? <path d="M9 18l6-6-6-6" /> : <path d="M15 18l-6-6 6-6" />}
             </svg>
           </button>
         </div>
 
-        <nav className="flex-1 px-1 py-4 space-y-1">
-          {navigation.map((item) => (
+        {!collapsed && (
+          <div className="border-b border-slate-200 px-2 py-2">
+            <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                currentMode === "design"
+                  ? "bg-slate-900 text-white"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              Diseño
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/almacenes")}
+              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                currentMode === "execution"
+                  ? "bg-slate-900 text-white"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              Ejecución
+            </button>
+            </div>
+          </div>
+        )}
+
+        <nav className="flex-1 space-y-1 px-1 py-4">
+          {visibleNavigation.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -204,15 +262,15 @@ const SidebarLayout = () => {
         </nav>
 
         <div
-          className={`px-3 py-3 border-t border-slate-200 text-xs text-slate-500 transition-opacity duration-200 ${
-            collapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+          className={`border-t border-slate-200 px-3 py-3 text-xs text-slate-500 transition-opacity duration-200 ${
+            collapsed ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
         >
           <div className="mb-1">
-            Estado: <span className="font-semibold text-emerald-600">ONLINE</span>
+            Vista: <span className="font-semibold text-slate-900">{currentMode === "design" ? "Diseño" : "Ejecución"}</span>
           </div>
           <div>
-            Última actualización: <span className="font-semibold">ahora</span>
+            Estado: <span className="font-semibold text-emerald-600">ONLINE</span>
           </div>
         </div>
       </aside>
