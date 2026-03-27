@@ -145,7 +145,7 @@ const SidebarLayout = () => {
   }, [collapsed]);
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-slate-50">
       <aside
         className={`flex flex-col border-r border-slate-200 bg-white transition-all duration-200 ${
           collapsed ? "w-16" : "w-64"
@@ -217,7 +217,7 @@ const SidebarLayout = () => {
         </div>
       </aside>
 
-      <div className="flex-1 bg-slate-50">
+      <div className="flex-1 min-h-0 overflow-hidden bg-slate-50">
         <Outlet />
       </div>
     </div>

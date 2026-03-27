@@ -151,8 +151,8 @@ function PaginaSwitch() {
   const camaras = selectedSwitch.datos.puertos.filter((p) => p.etiqueta.startsWith("Camara"));
 
   return (
-    <main className="p-4 h-screen flex flex-col gap-4">
-      <header className="flex flex-wrap justify-between items-start gap-4 mb-2">
+    <main className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
+      <header className="mb-2 flex shrink-0 flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold scada-text-primary tracking-tight">Switch IES-3242GC-E</h1>
           <p className="text-sm text-slate-500">Detalle de comunicaciones y salud de puertos.</p>
@@ -171,7 +171,7 @@ function PaginaSwitch() {
         </div>
       </header>
 
-      <section className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 flex-1">
+      <section className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
         <PerifericoList
           title="Switches"
           items={switchItems}

@@ -386,7 +386,7 @@ function PaginaDiagrama() {
   };
 
   return (
-    <main className="flex h-screen flex-col gap-3 p-4">
+    <main className="flex h-full min-h-0 flex-col gap-3 overflow-hidden p-4">
       <header className="scada-card flex items-center justify-between p-2 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="scada-text-primary text-base font-bold">SCADA Designer</div>

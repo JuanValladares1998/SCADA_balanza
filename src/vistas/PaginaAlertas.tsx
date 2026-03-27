@@ -3,8 +3,8 @@ import TarjetaAlertas from "../components/layout/cards/TarjetaAlertas";
 
 function PaginaAlertas() {
   return (
-    <main className="p-4 h-screen flex flex-col gap-4">
-      <header className="flex justify-between items-center mb-2">
+    <main className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
+      <header className="mb-2 flex shrink-0 items-center justify-between">
         <h1 className="text-2xl font-bold scada-text-primary tracking-tight">Sistema SCADA: Alertas</h1>
         <nav className="flex items-center gap-2 text-sm">
           <Link className="scada-text-secondary hover:underline" to="/dashboard">
@@ -17,8 +17,8 @@ function PaginaAlertas() {
         </nav>
       </header>
 
-      <section className="grid grid-cols-12 gap-4 h-full">
-        <div className="col-span-12 md:col-span-6 lg:col-span-4">
+      <section className="grid min-h-0 flex-1 grid-cols-12 gap-4">
+        <div className="col-span-12 min-h-0 md:col-span-6 lg:col-span-4">
           <TarjetaAlertas
             alertas={[
               {

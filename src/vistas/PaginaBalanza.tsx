@@ -85,8 +85,8 @@ function PaginaBalanza() {
   const balanzaSeleccionada = mockBalanzas.find((b) => b.id === selectedBalanzaId) ?? mockBalanzas[0];
 
   return (
-    <main className="p-4 h-screen flex flex-col gap-4">
-      <header className="flex flex-wrap justify-between items-start gap-4 mb-2">
+    <main className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
+      <header className="mb-2 flex shrink-0 flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold scada-text-primary tracking-tight">Monitoreo Balanza</h1>
           <p className="text-sm text-slate-500">Visualización en tiempo real de peso, celdas y estado de la balanza.</p>
@@ -105,7 +105,7 @@ function PaginaBalanza() {
         </div>
       </header>
 
-      <section className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 flex-1">
+      <section className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
         <PerifericoList
           title="Balanzas"
           items={balanzasItems}
@@ -113,7 +113,7 @@ function PaginaBalanza() {
           onSelect={handleSelectBalanza}
         />
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid min-h-0 grid-cols-1 gap-4">
           <div className="scada-card p-4">
             <div className="flex flex-wrap justify-between items-end gap-4">
               <div>

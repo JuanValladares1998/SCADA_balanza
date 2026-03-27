@@ -9,8 +9,8 @@ import { Link } from "react-router-dom";
 
 function PaginaDashboard() {
   return (
-    <main className="p-4 h-screen flex flex-col gap-4">
-      <header className="flex justify-between items-center mb-2">
+    <main className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
+      <header className="mb-2 flex shrink-0 items-center justify-between">
         <h1 className="text-2xl font-bold scada-text-primary tracking-tight">
           Sistema SCADA: Control de Pesaje
         </h1>
@@ -30,7 +30,7 @@ function PaginaDashboard() {
         </div>
       </header>
 
-      <section className="grid grid-cols-12 grid-rows-[1.40fr_1fr] gap-4 h-full">
+      <section className="grid min-h-0 flex-1 grid-cols-12 grid-rows-[1.40fr_1fr] gap-4">
         <TarjetaControlPeso pesoEntrada={12000} pesoSalida={10000} />
         <TarjetaDiagrama />
         <TarjetaAlertas

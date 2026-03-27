@@ -153,8 +153,8 @@ function PaginaNivel1() {
     const acumuladoPorTipo = crearAcumuladoPorTipo(alertasError);
 
     return (
-        <main className="p-4 h-screen flex flex-col gap-4">
-            <header className="flex justify-between items-center mb-2">
+        <main className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
+            <header className="mb-2 flex shrink-0 items-center justify-between">
                 <h1 className="text-2xl font-bold scada-text-primary tracking-tight">
                     Control de Pesaje
                 </h1>
@@ -165,8 +165,8 @@ function PaginaNivel1() {
                 </div>
             </header>
 
-            <section className="grid h-full min-h-0 grid-cols-2 auto-rows-fr gap-4">
-                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+            <section className="grid min-h-0 flex-1 grid-cols-2 auto-rows-fr gap-4">
+                <div className="grid min-h-0 grid-cols-2 gap-4">
                     <TarjetaAlertas titulo="Layouts Errores" alertas={alertasError} />
                     <TarjetaGraficoAlertas titulo="Gráfico Errores" estado="error" datos={graficoError} />
                 </div>
@@ -175,11 +175,11 @@ function PaginaNivel1() {
                     pendientes={alertasPendientes}
                     acumuladoPorTipo={acumuladoPorTipo}
                 />
-                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+                <div className="grid min-h-0 grid-cols-2 gap-4">
                     <TarjetaAlertas titulo="Layouts Alertas" alertas={alertasAlerta} />
                     <TarjetaGraficoAlertas titulo="Gráfico Alertas" estado="alerta" datos={graficoAlerta} />
                 </div>
-                <div className="grid h-full min-h-0 grid-cols-2 gap-4">
+                <div className="grid min-h-0 grid-cols-2 gap-4">
                     <TarjetaAlertas titulo="Layouts Notificaciones" alertas={alertasOk} />
                     <TarjetaGraficoAlertas titulo="Gráfico Notificaciones" estado="ok" datos={graficoOk} />
                 </div>

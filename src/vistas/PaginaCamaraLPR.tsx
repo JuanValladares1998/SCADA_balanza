@@ -333,8 +333,8 @@ function PaginaCamaraLPR() {
   }));
 
   return (
-    <main className="p-4 h-screen flex flex-col gap-4">
-      <header className="flex flex-wrap justify-between items-start gap-4 mb-2">
+    <main className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4">
+      <header className="mb-2 flex shrink-0 flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold scada-text-primary tracking-tight">Camara LPR Survision</h1>
           <p className="text-sm text-slate-500">Ultima lectura de placa y estado de la camara.</p>
